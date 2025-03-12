@@ -31,6 +31,7 @@
             splitContainer1 = new SplitContainer();
             txtIn = new TextBox();
             pnlLeftTop = new Panel();
+            btnApplyVoice = new Button();
             dgvVoices = new DataGridView();
             btnCopyVoicesJson = new Button();
             btnSaveFile = new Button();
@@ -39,6 +40,7 @@
             cmbVoices = new ComboBox();
             txtOut = new TextBox();
             pnlRightTop = new Panel();
+            btnPauseResume = new Button();
             btnTest = new Button();
             numVolume = new NumericUpDown();
             label2 = new Label();
@@ -87,10 +89,11 @@
             txtIn.ScrollBars = ScrollBars.Vertical;
             txtIn.Size = new Size(616, 467);
             txtIn.TabIndex = 1;
-            txtIn.Text = "<voice name=\"cousin\">\"Looks like it's your turn\"</voice> my cousin said to me with a laugh.";
+            txtIn.Text = "<voice name=\"cousin\">\"Looks like it's your turn to do it\"</voice> my cousin said to me with a smile";
             // 
             // pnlLeftTop
             // 
+            pnlLeftTop.Controls.Add(btnApplyVoice);
             pnlLeftTop.Controls.Add(dgvVoices);
             pnlLeftTop.Controls.Add(btnCopyVoicesJson);
             pnlLeftTop.Controls.Add(btnSaveFile);
@@ -102,6 +105,16 @@
             pnlLeftTop.Name = "pnlLeftTop";
             pnlLeftTop.Size = new Size(616, 128);
             pnlLeftTop.TabIndex = 0;
+            // 
+            // btnApplyVoice
+            // 
+            btnApplyVoice.Location = new Point(183, 44);
+            btnApplyVoice.Name = "btnApplyVoice";
+            btnApplyVoice.Size = new Size(75, 28);
+            btnApplyVoice.TabIndex = 14;
+            btnApplyVoice.Text = "Apply";
+            btnApplyVoice.UseVisualStyleBackColor = true;
+            btnApplyVoice.Click += BtnApplyVoice_Click;
             // 
             // dgvVoices
             // 
@@ -163,6 +176,7 @@
             cmbVoices.Name = "cmbVoices";
             cmbVoices.Size = new Size(206, 28);
             cmbVoices.TabIndex = 8;
+            cmbVoices.SelectedIndexChanged += CmbVoices_SelectedIndexChanged;
             // 
             // txtOut
             // 
@@ -176,6 +190,7 @@
             // 
             // pnlRightTop
             // 
+            pnlRightTop.Controls.Add(btnPauseResume);
             pnlRightTop.Controls.Add(btnTest);
             pnlRightTop.Controls.Add(numVolume);
             pnlRightTop.Controls.Add(label2);
@@ -188,6 +203,16 @@
             pnlRightTop.Name = "pnlRightTop";
             pnlRightTop.Size = new Size(616, 128);
             pnlRightTop.TabIndex = 0;
+            // 
+            // btnPauseResume
+            // 
+            btnPauseResume.Location = new Point(475, 45);
+            btnPauseResume.Name = "btnPauseResume";
+            btnPauseResume.Size = new Size(75, 28);
+            btnPauseResume.TabIndex = 12;
+            btnPauseResume.Text = "Pause";
+            btnPauseResume.UseVisualStyleBackColor = true;
+            btnPauseResume.Click += BtnPauseResume_Click;
             // 
             // btnTest
             // 
@@ -207,6 +232,7 @@
             numVolume.Size = new Size(54, 27);
             numVolume.TabIndex = 9;
             numVolume.Value = new decimal(new int[] { 50, 0, 0, 0 });
+            numVolume.ValueChanged += NumVolume_ValueChanged;
             // 
             // label2
             // 
@@ -225,6 +251,7 @@
             numRate.Name = "numRate";
             numRate.Size = new Size(54, 27);
             numRate.TabIndex = 10;
+            numRate.ValueChanged += NumRate_ValueChanged;
             // 
             // label1
             // 
@@ -306,5 +333,7 @@
         private Button btnSpeak;
         private OpenFileDialog ofd;
         private DataGridView dgvVoices;
+        private Button btnApplyVoice;
+        private Button btnPauseResume;
     }
 }
