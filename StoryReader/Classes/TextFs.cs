@@ -21,12 +21,6 @@ namespace StoryReader.Classes
                     var idxEnd = s.IndexOf("</voice>", idxStart);
                     if (idxEnd != -1)
                         AddPart(parts, s[idxStart..(idxEnd += "</voice>".Length)]); // text izmedju <voice> i </voice>
-                    //if (idxEnd != -1)
-                    //{
-                    //    idxEnd += "</voice>".Length;
-                    //    AddPart(parts, s[idxStart..idxEnd]); // text izmedju <voice> i </voice>
-                    //}
-                    //if (idxEnd == -1)
                     else
                     {
                         AddPart(parts, s[idxStart..] + "</voice>");
@@ -53,14 +47,14 @@ namespace StoryReader.Classes
         {
             for (int i = 0; i < parts.Count; i++)
                 foreach (var v in voices)
-                    parts[i] = parts[i].Replace($"<voice name=\"{v.Character}\">", $"\r\n<voice name=\"{v.VoiceName}\">");
+                    parts[i] = parts[i].Replace($"<voice name=\"{v.Character}\">", $"<voice name=\"{v.VoiceName}\">");
         }
 
         public static void AddSSMLroot(List<string> parts)
         {
             for (int i = 0; i < parts.Count; i++)
                 parts[i] = "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\">\r\n"
-                    + parts[i] + "\r\n</speak>";
+                    + parts[i] + "\r\n</speak>\r\n";
         }
     }
 }
