@@ -31,6 +31,7 @@
             components = new System.ComponentModel.Container();
             Label label2;
             Label label1;
+            Label label3;
             scMain = new SplitContainer();
             txtIn = new TextBox();
             pnlLeftTop = new Panel();
@@ -46,6 +47,7 @@
             cmbVoices = new ComboBox();
             txtOut = new TextBox();
             pnlRightTop = new Panel();
+            numFontSize = new NumericUpDown();
             btnPauseResume = new StoryReader.Controls.UcButton();
             btnTest = new StoryReader.Controls.UcButton();
             numVolume = new NumericUpDown();
@@ -59,10 +61,16 @@
             tsmiFile = new ToolStripMenuItem();
             tsmiFileOpen = new ToolStripMenuItem();
             tsmiFileSave = new ToolStripMenuItem();
+            tsmiFileBrowse = new ToolStripMenuItem();
             editToolStripMenuItem = new ToolStripMenuItem();
+            tsmiRemoveDuplicateLetters = new ToolStripMenuItem();
+            tsmiInsertOvertype = new ToolStripMenuItem();
+            tsmiAddSpaceAfterPunctuation = new ToolStripMenuItem();
+            tsmiEditUndo = new ToolStripMenuItem();
             timStatus = new System.Windows.Forms.Timer(components);
             label2 = new Label();
             label1 = new Label();
+            label3 = new Label();
             ((System.ComponentModel.ISupportInitialize)scMain).BeginInit();
             scMain.Panel1.SuspendLayout();
             scMain.Panel2.SuspendLayout();
@@ -70,6 +78,7 @@
             pnlLeftTop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvVoices).BeginInit();
             pnlRightTop.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numFontSize).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numVolume).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numRate).BeginInit();
             stripStatus.SuspendLayout();
@@ -94,6 +103,15 @@
             label1.TabIndex = 8;
             label1.Text = "Rate";
             // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(8, 96);
+            label3.Name = "label3";
+            label3.Size = new Size(38, 20);
+            label3.TabIndex = 13;
+            label3.Text = "Font";
+            // 
             // scMain
             // 
             scMain.Dock = DockStyle.Fill;
@@ -117,6 +135,7 @@
             // txtIn
             // 
             txtIn.Dock = DockStyle.Fill;
+            txtIn.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             txtIn.Location = new Point(0, 128);
             txtIn.Multiline = true;
             txtIn.Name = "txtIn";
@@ -124,6 +143,7 @@
             txtIn.Size = new Size(616, 421);
             txtIn.TabIndex = 1;
             txtIn.Text = "<voice name=\"cousin\">\"Looks like it's your turn to do it\"</voice> my cousin said to me with a smile";
+            txtIn.KeyPress += TxtIn_KeyPress;
             // 
             // pnlLeftTop
             // 
@@ -262,6 +282,7 @@
             // txtOut
             // 
             txtOut.Dock = DockStyle.Fill;
+            txtOut.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             txtOut.Location = new Point(0, 128);
             txtOut.Multiline = true;
             txtOut.Name = "txtOut";
@@ -271,6 +292,8 @@
             // 
             // pnlRightTop
             // 
+            pnlRightTop.Controls.Add(numFontSize);
+            pnlRightTop.Controls.Add(label3);
             pnlRightTop.Controls.Add(btnPauseResume);
             pnlRightTop.Controls.Add(btnTest);
             pnlRightTop.Controls.Add(numVolume);
@@ -284,6 +307,17 @@
             pnlRightTop.Name = "pnlRightTop";
             pnlRightTop.Size = new Size(616, 128);
             pnlRightTop.TabIndex = 0;
+            // 
+            // numFontSize
+            // 
+            numFontSize.Location = new Point(52, 94);
+            numFontSize.Maximum = new decimal(new int[] { 24, 0, 0, 0 });
+            numFontSize.Minimum = new decimal(new int[] { 8, 0, 0, 0 });
+            numFontSize.Name = "numFontSize";
+            numFontSize.Size = new Size(54, 27);
+            numFontSize.TabIndex = 14;
+            numFontSize.Value = new decimal(new int[] { 12, 0, 0, 0 });
+            numFontSize.ValueChanged += NumFontSize_ValueChanged;
             // 
             // btnPauseResume
             // 
@@ -383,7 +417,7 @@
             // 
             // tsmiFile
             // 
-            tsmiFile.DropDownItems.AddRange(new ToolStripItem[] { tsmiFileOpen, tsmiFileSave });
+            tsmiFile.DropDownItems.AddRange(new ToolStripItem[] { tsmiFileOpen, tsmiFileSave, tsmiFileBrowse });
             tsmiFile.Name = "tsmiFile";
             tsmiFile.Size = new Size(37, 20);
             tsmiFile.Text = "File";
@@ -391,22 +425,67 @@
             // tsmiFileOpen
             // 
             tsmiFileOpen.Name = "tsmiFileOpen";
-            tsmiFileOpen.Size = new Size(103, 22);
-            tsmiFileOpen.Text = "Open";
+            tsmiFileOpen.ShortcutKeys = Keys.Control | Keys.O;
+            tsmiFileOpen.Size = new Size(180, 22);
+            tsmiFileOpen.Text = "Open...";
+            tsmiFileOpen.ToolTipText = "Open text/story file";
             tsmiFileOpen.Click += TsmiFileOpen_Click;
             // 
             // tsmiFileSave
             // 
             tsmiFileSave.Name = "tsmiFileSave";
-            tsmiFileSave.Size = new Size(103, 22);
+            tsmiFileSave.ShortcutKeys = Keys.Control | Keys.S;
+            tsmiFileSave.Size = new Size(180, 22);
             tsmiFileSave.Text = "Save";
+            tsmiFileSave.ToolTipText = "Save changes to opened text/story";
             tsmiFileSave.Click += TsmiFileSave_Click;
+            // 
+            // tsmiFileBrowse
+            // 
+            tsmiFileBrowse.Name = "tsmiFileBrowse";
+            tsmiFileBrowse.Size = new Size(180, 22);
+            tsmiFileBrowse.Text = "Browse...";
+            tsmiFileBrowse.Click += TsmiFileBrowse_Click;
             // 
             // editToolStripMenuItem
             // 
+            editToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { tsmiRemoveDuplicateLetters, tsmiInsertOvertype, tsmiAddSpaceAfterPunctuation, tsmiEditUndo });
             editToolStripMenuItem.Name = "editToolStripMenuItem";
             editToolStripMenuItem.Size = new Size(39, 20);
             editToolStripMenuItem.Text = "Edit";
+            // 
+            // tsmiRemoveDuplicateLetters
+            // 
+            tsmiRemoveDuplicateLetters.Name = "tsmiRemoveDuplicateLetters";
+            tsmiRemoveDuplicateLetters.ShortcutKeys = Keys.Control | Keys.D;
+            tsmiRemoveDuplicateLetters.Size = new Size(265, 22);
+            tsmiRemoveDuplicateLetters.Text = "Remove duplicate letters";
+            tsmiRemoveDuplicateLetters.Click += TsmiRemoveDuplicateLetters_Click;
+            // 
+            // tsmiInsertOvertype
+            // 
+            tsmiInsertOvertype.Name = "tsmiInsertOvertype";
+            tsmiInsertOvertype.ShortcutKeys = Keys.Control | Keys.I;
+            tsmiInsertOvertype.Size = new Size(265, 22);
+            tsmiInsertOvertype.Text = "New char: Insert";
+            tsmiInsertOvertype.ToolTipText = "Click to change the way new character is placed in text: Insert<->Overtype";
+            tsmiInsertOvertype.Click += TsmiInsertOvertype_Click;
+            // 
+            // tsmiAddSpaceAfterPunctuation
+            // 
+            tsmiAddSpaceAfterPunctuation.Name = "tsmiAddSpaceAfterPunctuation";
+            tsmiAddSpaceAfterPunctuation.ShortcutKeys = Keys.Control | Keys.P;
+            tsmiAddSpaceAfterPunctuation.Size = new Size(265, 22);
+            tsmiAddSpaceAfterPunctuation.Text = "Add space after punctuation";
+            tsmiAddSpaceAfterPunctuation.Click += TsmiAddSpaceAfterPunctuation_Click;
+            // 
+            // tsmiEditUndo
+            // 
+            tsmiEditUndo.Name = "tsmiEditUndo";
+            tsmiEditUndo.ShortcutKeys = Keys.Control | Keys.Z;
+            tsmiEditUndo.Size = new Size(265, 22);
+            tsmiEditUndo.Text = "Undo";
+            tsmiEditUndo.Click += TsmiEditUndo_Click;
             // 
             // timStatus
             // 
@@ -421,11 +500,13 @@
             Controls.Add(scMain);
             Controls.Add(stripMenu);
             Controls.Add(stripStatus);
+            KeyPreview = true;
             MainMenuStrip = stripMenu;
             Name = "FrmMain";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Story Reader";
             Load += FrmMain_Load;
+            KeyDown += FrmMain_KeyDown;
             scMain.Panel1.ResumeLayout(false);
             scMain.Panel1.PerformLayout();
             scMain.Panel2.ResumeLayout(false);
@@ -437,6 +518,7 @@
             ((System.ComponentModel.ISupportInitialize)dgvVoices).EndInit();
             pnlRightTop.ResumeLayout(false);
             pnlRightTop.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numFontSize).EndInit();
             ((System.ComponentModel.ISupportInitialize)numVolume).EndInit();
             ((System.ComponentModel.ISupportInitialize)numRate).EndInit();
             stripStatus.ResumeLayout(false);
@@ -481,5 +563,11 @@
         private TextBox txtReplace;
         private Controls.UcButton btnNextReplace;
         private Controls.UcButton btnReplace;
+        private ToolStripMenuItem tsmiRemoveDuplicateLetters;
+        private ToolStripMenuItem tsmiInsertOvertype;
+        private ToolStripMenuItem tsmiAddSpaceAfterPunctuation;
+        private ToolStripMenuItem tsmiFileBrowse;
+        private NumericUpDown numFontSize;
+        private ToolStripMenuItem tsmiEditUndo;
     }
 }

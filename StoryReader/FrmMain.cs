@@ -1,5 +1,6 @@
 ﻿using StoryReader.Classes;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Speech.Synthesis;
 using System.Text.Json;
 
@@ -25,13 +26,13 @@ namespace StoryReader
                     cmbVoices.Items.Add(v.VoiceInfo.Name);
                 if (cmbVoices.Items.Count > 0)
                     cmbVoices.SelectedIndex = 0;
+                IsNewCharOvertype = false;
+                prevTxtInText = txtIn.Text;
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
         private readonly BindingList<Voice> voices = [];
-
-        //private SpeechSynthesizer synth = new() { Volume = 100, Rate = 0 };
 
         private readonly string headerSeparator = "*****";
 
@@ -42,12 +43,12 @@ namespace StoryReader
                 // ako je selektovan deo teksta - citaj taj deo
                 if (txtIn.SelectionLength != 0)
                     return txtIn.SelectedText;
-                // ako je kursor na kraju - citaj ceo tekst (od separatora zaglavlja i price)
-                if (txtIn.SelectionStart == txtIn.TextLength)
+                // ako je kursor na kraju ili pocetku - citaj ceo tekst (od separatora zaglavlja)
+                if (txtIn.SelectionStart == txtIn.TextLength || txtIn.SelectionStart == 0)
                 {
-                    var idx = txtIn.Text.IndexOf(headerSeparator);
+                    var idx = txtIn.Text.IndexOf(headerSeparator + Environment.NewLine);
                     if (idx != -1)
-                        return txtIn.Text[idx..];
+                        return txtIn.Text[(idx + headerSeparator.Length)..];
                     else
                         return txtIn.Text;
                 }
@@ -56,24 +57,16 @@ namespace StoryReader
             }
         }
 
-        //private string? SpeechVoice
-        //    => cmbVoices.SelectedItem?.ToString();
-
         private void BtnSpeak_Click(object sender, EventArgs e)
         {
             try
             {
-                //if (synth.State == SynthesizerState.Speaking)
-                //    synth.SpeakAsyncCancelAll();
-                //synth.SelectVoice(SpeechVoice);
-                //synth.Rate = (int)numRate.Value;
-                //synth.Volume = (int)numVolume.Value;
-                //synth.SpeakAsync(SpeechText);
-
                 var parts = TextFs.SplitSSMLs(SpeechText);
                 TextFs.VoicesForCharacters(parts, voices);
                 TextFs.AddSSMLroot(parts);
                 txtOut.Clear();
+                speaker.Synth.Volume = (int)numVolume.Value;
+                speaker.Synth.Rate = (int)numRate.Value;
                 foreach (var p in parts)
                 {
                     speaker.AddToSpeak(p);
@@ -87,50 +80,21 @@ namespace StoryReader
         {
             try
             {
-                //var defaultVoice = voices.FirstOrDefault(it => it.Character == "default" || it.Character == "def")
-                //    ?.VoiceName;
-                //if (cmbVoices.SelectedItem is string voice)
-                //    TextFs.SplitSSMLs(SpeechText, voice);
 
-                //if (cmbVoices.SelectedItem != null)
-                //    TextFs.SplitSSMLs(SpeechText, cmbVoices.SelectedItem.ToString()!);
-
-                //var s = "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\">\r\n\r\n"
-                //    + txtIn.SelectedText + "\r\n\r\n</speak>";
-                //foreach (var v in voices)
-                //    s = s.Replace($"<voice name=\"{v.Character}\">", $"\r\n<voice name=\"{v.VoiceName}\">");
-                //s = s.Replace("</voice>", "</voice>\r\n");
-                //speaker.AddToSpeak(s);
-
-                //var v = dgvVoices.CurrentRow!.DataBoundItem as Voice;
-                //voices.Add(new Voice { Character = "x", VoiceName = "bla" });
-
-                //synth.Rate = (int)numRate.Value;
-                //synth.Volume = (int)numVolume.Value;
-                //synth.SelectVoice(SpeechVoice);
-                //var s = "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\">\r\n\r\n"
-                //    + txtIn.SelectedText + "\r\n\r\n</speak>";
-                //foreach (var v in voices)
-                //    s = s.Replace($"<voice name=\"{v.Character}\">", $"\r\n<voice name=\"{v.VoiceName}\">");
-                //s = s.Replace("</voice>", "</voice>\r\n");
-                //txtOut.Text = s;
-                //prompt = synth.SpeakSsmlAsync(s);
-                //synth.Resume();
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
-        // u content od meta-speech staviti JSON podatke o glasovima likova
-        // <meta name="speech" content="[{...},{...}]">
-
-        //private Prompt prompt;
         private readonly Speaker speaker = new();
 
         private void BtnStop_Click(object sender, EventArgs e)
         {
             try
             {
+                var paused = speaker.Synth.State == SynthesizerState.Paused;
                 speaker.Stop();
+                if (paused)
+                    btnPauseResume.PerformClick();
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
@@ -169,7 +133,7 @@ namespace StoryReader
                 if (fileName != null)
                 {
                     File.WriteAllText(fileName, txtIn.Text);
-                    DisplayStatus("Done.");
+                    DisplayStatus("File saved.");
                 }
                 else
                     throw new Exception("You have to open a file first.");
@@ -251,15 +215,7 @@ namespace StoryReader
                 }
                 idxStart = txtIn.SelectionStart;
                 var selLen = txtIn.SelectionLength;
-                //var selEnd = selStart + selLen;
-                //var s = txtIn.Text;
-                //s = s.Insert(selStart + selLen, "</voice>");
-                //var startTag = $"<voice name=\"{v.Character}\">";
-                //s = s.Insert(txtIn.SelectionStart, startTag);
-                //txtIn.Text = s;
                 lenInsert = InsertVoiceTags(idxStart, selLen, v.Character);
-                //txtIn.Select(selEnd, 0);
-                //txtIn.ScrollToCaret();
                 FocusOnText(idxStart, lenInsert);
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
@@ -270,7 +226,6 @@ namespace StoryReader
             var s = txtIn.Text;
             s = s.Insert(idxStart + selLen, "</voice>");
             var startTag = $"<voice name=\"{character}\">";
-            //s = s.Insert(txtIn.SelectionStart, startTag);
             s = s.Insert(idxStart, startTag);
             txtIn.Text = s;
             return startTag.Length + selLen + "</voice>".Length;
@@ -345,6 +300,153 @@ namespace StoryReader
                 s += txtReplace.Text;
                 s += txtIn.Text[(txtIn.SelectionStart + txtIn.SelectionLength)..];
                 txtIn.Text = s;
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private void TsmiRemoveDuplicateLetters_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (txtIn.SelectionLength == 0)
+                    throw new Exception("You have to select a part of text.");
+                prevTxtInText = txtIn.Text;
+                var idxStart = txtIn.SelectionStart;
+                var idxEnd = idxStart + txtIn.SelectionLength;
+                var chPrev = txtIn.Text[idxStart];
+                var res = chPrev.ToString();
+                for (int i = idxStart + 1; i < idxEnd; i++)
+                {
+                    var ch = txtIn.Text[i];
+                    if (ch == '.' ||
+                        ch != chPrev && char.ToLower(ch) != char.ToLower(chPrev))
+                        res += chPrev = ch;
+                }
+                txtIn.Text = txtIn.Text[0..idxStart] + res + txtIn.Text[idxEnd..];
+                FocusOnText(idxStart, res.Length);
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private bool isNewCharOvertype;
+
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool IsNewCharOvertype
+        {
+            get { return isNewCharOvertype; }
+            set
+            {
+                isNewCharOvertype = value;
+                tsmiInsertOvertype.Text = "New char: " + (value ? "Overtype" : "Insert");
+            }
+        }
+
+        private void TsmiInsertOvertype_Click(object sender, EventArgs e)
+        {
+            IsNewCharOvertype = !IsNewCharOvertype;
+            DisplayStatus(tsmiInsertOvertype.Text!);
+        }
+
+        private void TxtIn_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            try
+            {
+                prevTxtInText = txtIn.Text;
+                var idxStart = txtIn.SelectionStart;
+                if (IsNewCharOvertype && txtIn.SelectionLength == 0
+                    && idxStart < txtIn.TextLength)
+                {
+                    var s = txtIn.Text.Remove(idxStart, 1);
+                    s = s.Insert(idxStart, e.KeyChar.ToString());
+                    txtIn.Text = s;
+                    txtIn.Select(idxStart + 1, 0);
+                    e.Handled = true;
+                }
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private void TsmiAddSpaceAfterPunctuation_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (txtIn.SelectionLength == 0)
+                    throw new Exception("You have to select a part of text.");
+                prevTxtInText = txtIn.Text;
+                var idxStart = txtIn.SelectionStart;
+                var chPrev = txtIn.SelectedText[0];
+                var res = chPrev.ToString();
+                var n = txtIn.SelectionLength;
+                var isTag = false;
+                for (int i = 1; i < n; i++)
+                {
+                    var ch = txtIn.SelectedText[i];
+                    if (chPrev == '<' && ch == 'v' || chPrev == '<' && ch == '/')
+                        isTag = true;
+                    if (chPrev == '>')
+                        isTag = false;
+
+                    if (!isTag &&
+                        char.IsPunctuation(chPrev) && !IsQuotation(chPrev) && !char.IsWhiteSpace(ch)
+                        && (ch != '.' || chPrev != '.')
+                        && (!IsQuotation(ch) || !IsQuotation(chPrev)))
+                        res += " ";
+
+                    res += chPrev = ch;
+                }
+                txtIn.Text = txtIn.Text[0..idxStart] + res 
+                    + txtIn.Text[(idxStart + n)..];
+                FocusOnText(idxStart, res.Length);
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private static bool IsQuotation(char c)
+            => c == '"' || c == '\'';
+
+        private void TsmiFileBrowse_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo()
+                {
+                    UseShellExecute = true,
+                    FileName = ofd.InitialDirectory
+                });
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message, "Open Text/Story Folder"); }
+        }
+
+        private void NumFontSize_ValueChanged(object sender, EventArgs e)
+        {
+            txtIn.Font = txtOut.Font = new Font(txtIn.Font.FontFamily, (int)numFontSize.Value);
+        }
+
+        private void FrmMain_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Debug.WriteLine(e.KeyCode);
+            if (e.KeyCode == Keys.MediaPlayPause)
+            {
+                //if (speaker.Synth.State == SynthesizerState.Speaking
+                //    || speaker.Synth.State == SynthesizerState.Speaking)
+                if (speaker.Synth.State == SynthesizerState.Ready)
+                    btnSpeak.PerformClick();
+                else
+                    btnPauseResume.PerformClick();
+            }
+            if (e.KeyCode == Keys.MediaStop)
+                btnStop.PerformClick();
+        }
+
+        private string prevTxtInText;
+
+        private void TsmiEditUndo_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var idxStart = txtIn.SelectionStart;
+                (prevTxtInText, txtIn.Text) = (txtIn.Text, prevTxtInText);
+                txtIn.SelectionStart = idxStart;
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }

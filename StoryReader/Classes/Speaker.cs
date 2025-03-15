@@ -15,18 +15,6 @@ namespace StoryReader.Classes
             synth.SpeakCompleted += Synth_SpeakCompleted;
         }
 
-        //public int Rate
-        //{
-        //    get { return synth.Rate; }
-        //    set { synth.Rate = value; }
-        //}
-
-        //public int Volume
-        //{
-        //    get { return synth.Volume; }
-        //    set { synth.Volume = value; }
-        //}
-
         private void Synth_SpeakCompleted(object? sender, SpeakCompletedEventArgs e)
         {
             if (speakerSounds.Count > 0)
