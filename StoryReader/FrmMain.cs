@@ -1,8 +1,10 @@
 ﻿using StoryReader.Classes;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Speech.Synthesis;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace StoryReader
 {
@@ -28,6 +30,7 @@ namespace StoryReader
                     cmbVoices.SelectedIndex = 0;
                 IsNewCharOvertype = false;
                 prevTxtInText = txtIn.Text;
+                lblFileHeader.Text = "/";
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
@@ -76,15 +79,6 @@ namespace StoryReader
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
-        private void BtnTest_Click(object sender, EventArgs e)
-        {
-            try
-            {
-
-            }
-            catch (Exception ex) { MessageBox.Show(ex.Message); }
-        }
-
         private readonly Speaker speaker = new();
 
         private void BtnStop_Click(object sender, EventArgs e)
@@ -103,14 +97,29 @@ namespace StoryReader
         {
             try
             {
-                if (dgvVoices.CurrentRow?.DataBoundItem is Voice v
-                    && cmbVoices.SelectedItem is string voiceName)
+                if (cmbVoices.SelectedItem is string voiceName)
                 {
-                    v.VoiceName = voiceName;
-                    dgvVoices.Refresh();
+                    var selCells = dgvVoices.SelectedCells;
+                    var selVoice = selCells.Count == 0 || dgvVoices.Rows[selCells[0].RowIndex].IsNewRow
+                        ? null : dgvVoices.Rows[selCells[0].RowIndex].DataBoundItem as Voice;
+
+                    if (selVoice != null)
+                    {
+                        selVoice.VoiceName = voiceName;
+                        dgvVoices.Refresh();
+                    }
+                    else if (!voices.Any(it => it.Character == Voice.Default))
+                        voices.Add(new Voice { Character = Voice.Default, VoiceName = voiceName });
                 }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private void DisplayFileName(string newFileName)
+        {
+            txtIn.Text = File.ReadAllText(fileName = newFileName);
+            var fi = new FileInfo(fileName);
+            lblFileHeader.Text = fi.Name;
         }
 
         private void DisplayStatus(string s)
@@ -130,15 +139,24 @@ namespace StoryReader
         {
             try
             {
-                if (fileName != null)
+                //if (fileName != null)
+                if (IsFileChanged)
                 {
-                    File.WriteAllText(fileName, txtIn.Text);
+                    //lblFileHeader.Text = lblFileHeader.Text[0..(lblFileHeader.Text.Length - 2)];
+                    DisplayFileName(fileName!);
+                    File.WriteAllText(fileName!, txtIn.Text);
                     DisplayStatus("File saved.");
                 }
                 else
                     throw new Exception("You have to open a file first.");
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private void TxtIn_TextChanged(object sender, EventArgs e)
+        {
+            if (fileName != null && !lblFileHeader.Text.EndsWith('*'))
+                lblFileHeader.Text += " *";
         }
 
         private string? fileName = null;
@@ -149,7 +167,10 @@ namespace StoryReader
             {
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
-                    txtIn.Text = File.ReadAllText(fileName = ofd.FileName);
+                    //txtIn.Text = File.ReadAllText(fileName = ofd.FileName);
+                    //var fi = new FileInfo(fileName);
+                    //lblFileHeader.Text = fi.Name;
+                    DisplayFileName(ofd.FileName);
                     ReadCharVoices();
                 }
             }
@@ -231,10 +252,16 @@ namespace StoryReader
             return startTag.Length + selLen + "</voice>".Length;
         }
 
+        private const int EM_LINESCROLL = 0x00B6;
+
+        [DllImport("user32.dll")]
+        private static extern int SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);
+
         private void FocusOnText(int idxStart, int length)
         {
             txtIn.Select(idxStart, length);
-            txtIn.ScrollToCaret();
+            var idxLine = txtIn.GetLineFromCharIndex(idxStart);
+            _ = SendMessage(txtIn.Handle, EM_LINESCROLL, 0, idxLine >= 3 ? idxLine - 3 : 0);
             txtIn.Focus();
         }
 
@@ -251,24 +278,41 @@ namespace StoryReader
         }
 
         private void NumRate_ValueChanged(object sender, EventArgs e)
-        {
-            speaker.Synth.Rate = (int)numRate.Value;
-        }
+            => speaker.Synth.Rate = (int)numRate.Value;
 
         private void NumVolume_ValueChanged(object sender, EventArgs e)
+            => speaker.Synth.Volume = (int)numVolume.Value;
+
+        private void StoryTextHeader_Click(object sender, EventArgs e)
+            => txtIn.Select();
+
+        private void TxtSearch_KeyDown(object sender, KeyEventArgs e)
         {
-            speaker.Synth.Volume = (int)numVolume.Value;
+            if (e.KeyCode == Keys.Enter && txtReplace.Text == "")
+            {
+                e.SuppressKeyPress = true;
+                e.Handled = true;
+                txtIn.Select();
+            }
         }
 
-        private void PnlLeftTop_Click(object sender, EventArgs e)
+        private void BtnNextReplace_Click(object sender, EventArgs e)
         {
-            txtIn.Select();
+            try
+            {
+                //if (string.Equals(txtIn.SelectedText, txtSearch.Text, StringComparison.InvariantCultureIgnoreCase))
+                var match = Regex.Match(txtIn.Text[txtIn.SelectionStart..], txtSearch.Text, RegexOptions.IgnoreCase);
+                if (match.Success)
+                    txtIn.SelectionStart++;
+            }
+            catch { }
+            FindText(true);
         }
 
         private void Search_Click(object sender, EventArgs e)
-            => TxtSearch_TextChanged(this, EventArgs.Empty);
+            => FindText(true);
 
-        private void TxtSearch_TextChanged(object sender, EventArgs e)
+        private void FindText(bool focus)
         {
             var str = txtSearch.Text;
             if (str.Length == 0)
@@ -276,19 +320,40 @@ namespace StoryReader
                 lblSearchResults.Text = "";
                 return;
             }
-            var idx = txtIn.Text.IndexOf(str);
-            if (idx > -1)
-            {
-                txtIn.Select(idx, str.Length);
-                lblSearchResults.Text = "✅";
-            }
-            else
-            {
-                txtIn.Select(0, 0);
-                lblSearchResults.Text = "❌";
-            }
 
+            try
+            {
+                var match = Regex.Match(txtIn.Text[txtIn.SelectionStart..], str, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    txtIn.Select(txtIn.SelectionStart + match.Index, match.Length);
+                    lblSearchResults.Text = "✅";
+                }
+                else
+                {
+                    txtIn.Select(0, 0);
+                    lblSearchResults.Text = "❌";
+                }
+
+                //var idx = txtIn.Text.IndexOf(str, txtIn.SelectionStart, StringComparison.InvariantCultureIgnoreCase);
+                //if (idx > -1)
+                //{
+                //    txtIn.Select(idx, str.Length);
+                //    lblSearchResults.Text = "✅";
+                //}
+                //else
+                //{
+                //    txtIn.Select(0, 0);
+                //    lblSearchResults.Text = "❌";
+                //}
+                if (focus)
+                    FocusOnText(txtIn.SelectionStart, txtIn.SelectionLength);
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
+
+        private void TxtSearch_TextChanged(object sender, EventArgs e)
+            => FindText(false);
 
         private void BtnReplace_Click(object sender, EventArgs e)
         {
@@ -300,6 +365,7 @@ namespace StoryReader
                 s += txtReplace.Text;
                 s += txtIn.Text[(txtIn.SelectionStart + txtIn.SelectionLength)..];
                 txtIn.Text = s;
+                FindText(true);
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
@@ -394,7 +460,7 @@ namespace StoryReader
 
                     res += chPrev = ch;
                 }
-                txtIn.Text = txtIn.Text[0..idxStart] + res 
+                txtIn.Text = txtIn.Text[0..idxStart] + res
                     + txtIn.Text[(idxStart + n)..];
                 FocusOnText(idxStart, res.Length);
             }
@@ -449,6 +515,30 @@ namespace StoryReader
                 txtIn.SelectionStart = idxStart;
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private void DgvVoices_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // DoubleClick on any data row that is not new, Character column -> Click on Apply button
+            if (e.RowIndex >= 0 && e.ColumnIndex == 0 && !dgvVoices.Rows[e.RowIndex].IsNewRow)
+                btnApplyVoice.PerformClick();
+        }
+
+        /// <summary>Is the text of a story changed.</summary>
+        private bool IsFileChanged
+            => fileName != null && lblFileHeader.Text.EndsWith('*');
+
+        private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (IsFileChanged)
+            {
+                var res = MessageBox.Show("Do you want to save changes to your file?", "?"
+                    , MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                if (res == DialogResult.Cancel)
+                    e.Cancel = true;
+                if (res == DialogResult.Yes)
+                    tsmiFileSave.PerformClick();
+            }
         }
     }
 }

@@ -38,7 +38,7 @@ namespace StoryReader.Classes
             if (str != "")
             {
                 if (!str.Contains("<voice"))
-                    str = $"<voice name=\"default\">{str}</voice>";
+                    str = $"<voice name=\"{Voice.Default}\">{str}</voice>";
                 parts.Add(str);
             }
         }

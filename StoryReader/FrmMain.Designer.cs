@@ -34,6 +34,8 @@
             Label label3;
             scMain = new SplitContainer();
             txtIn = new TextBox();
+            pnlStoryTextHeader = new Panel();
+            lblFileHeader = new Label();
             pnlLeftTop = new Panel();
             btnReplace = new StoryReader.Controls.UcButton();
             btnNextReplace = new StoryReader.Controls.UcButton();
@@ -49,7 +51,6 @@
             pnlRightTop = new Panel();
             numFontSize = new NumericUpDown();
             btnPauseResume = new StoryReader.Controls.UcButton();
-            btnTest = new StoryReader.Controls.UcButton();
             numVolume = new NumericUpDown();
             numRate = new NumericUpDown();
             btnStop = new StoryReader.Controls.UcButton();
@@ -75,6 +76,7 @@
             scMain.Panel1.SuspendLayout();
             scMain.Panel2.SuspendLayout();
             scMain.SuspendLayout();
+            pnlStoryTextHeader.SuspendLayout();
             pnlLeftTop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvVoices).BeginInit();
             pnlRightTop.SuspendLayout();
@@ -122,6 +124,7 @@
             // scMain.Panel1
             // 
             scMain.Panel1.Controls.Add(txtIn);
+            scMain.Panel1.Controls.Add(pnlStoryTextHeader);
             scMain.Panel1.Controls.Add(pnlLeftTop);
             // 
             // scMain.Panel2
@@ -136,14 +139,41 @@
             // 
             txtIn.Dock = DockStyle.Fill;
             txtIn.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            txtIn.Location = new Point(0, 128);
+            txtIn.Location = new Point(0, 162);
             txtIn.Multiline = true;
             txtIn.Name = "txtIn";
             txtIn.ScrollBars = ScrollBars.Vertical;
-            txtIn.Size = new Size(616, 421);
+            txtIn.Size = new Size(616, 387);
             txtIn.TabIndex = 1;
             txtIn.Text = "<voice name=\"cousin\">\"Looks like it's your turn to do it\"</voice> my cousin said to me with a smile";
+            txtIn.TextChanged += TxtIn_TextChanged;
             txtIn.KeyPress += TxtIn_KeyPress;
+            // 
+            // pnlStoryTextHeader
+            // 
+            pnlStoryTextHeader.BackColor = Color.SkyBlue;
+            pnlStoryTextHeader.BorderStyle = BorderStyle.FixedSingle;
+            pnlStoryTextHeader.Controls.Add(lblFileHeader);
+            pnlStoryTextHeader.Dock = DockStyle.Top;
+            pnlStoryTextHeader.Location = new Point(0, 135);
+            pnlStoryTextHeader.Name = "pnlStoryTextHeader";
+            pnlStoryTextHeader.Size = new Size(616, 27);
+            pnlStoryTextHeader.TabIndex = 2;
+            pnlStoryTextHeader.Click += StoryTextHeader_Click;
+            // 
+            // lblFileHeader
+            // 
+            lblFileHeader.AutoSize = true;
+            lblFileHeader.Dock = DockStyle.Left;
+            lblFileHeader.Font = new Font("Segoe UI", 12.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblFileHeader.Location = new Point(0, 0);
+            lblFileHeader.Margin = new Padding(0);
+            lblFileHeader.Name = "lblFileHeader";
+            lblFileHeader.Padding = new Padding(2);
+            lblFileHeader.Size = new Size(75, 27);
+            lblFileHeader.TabIndex = 0;
+            lblFileHeader.Text = "story.txt";
+            lblFileHeader.Click += StoryTextHeader_Click;
             // 
             // pnlLeftTop
             // 
@@ -160,18 +190,18 @@
             pnlLeftTop.Dock = DockStyle.Top;
             pnlLeftTop.Location = new Point(0, 0);
             pnlLeftTop.Name = "pnlLeftTop";
-            pnlLeftTop.Size = new Size(616, 128);
+            pnlLeftTop.Size = new Size(616, 135);
             pnlLeftTop.TabIndex = 0;
-            pnlLeftTop.Click += PnlLeftTop_Click;
+            pnlLeftTop.Click += StoryTextHeader_Click;
             // 
             // btnReplace
             // 
-            btnReplace.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnReplace.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             btnReplace.FlatStyle = FlatStyle.System;
             btnReplace.Font = new Font("Segoe UI", 12F);
-            btnReplace.Location = new Point(555, 94);
+            btnReplace.Location = new Point(582, 101);
             btnReplace.Name = "btnReplace";
-            btnReplace.Size = new Size(28, 28);
+            btnReplace.Size = new Size(29, 29);
             btnReplace.TabIndex = 19;
             btnReplace.Text = "✏";
             btnReplace.ToolTipText = "Replace";
@@ -180,31 +210,32 @@
             // 
             // btnNextReplace
             // 
-            btnNextReplace.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnNextReplace.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             btnNextReplace.FlatStyle = FlatStyle.System;
             btnNextReplace.Font = new Font("Segoe UI", 12F);
-            btnNextReplace.Location = new Point(583, 94);
+            btnNextReplace.Location = new Point(582, 69);
             btnNextReplace.Name = "btnNextReplace";
-            btnNextReplace.Size = new Size(28, 28);
-            btnNextReplace.TabIndex = 18;
+            btnNextReplace.Size = new Size(29, 29);
+            btnNextReplace.TabIndex = 17;
             btnNextReplace.Text = "➡";
             btnNextReplace.ToolTipText = "Move to next";
             btnNextReplace.UseVisualStyleBackColor = true;
+            btnNextReplace.Click += BtnNextReplace_Click;
             // 
             // txtReplace
             // 
             txtReplace.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            txtReplace.Location = new Point(458, 95);
+            txtReplace.Location = new Point(458, 102);
             txtReplace.Name = "txtReplace";
             txtReplace.PlaceholderText = "Replace";
-            txtReplace.Size = new Size(96, 27);
-            txtReplace.TabIndex = 17;
+            txtReplace.Size = new Size(124, 27);
+            txtReplace.TabIndex = 18;
             // 
             // lblSearchResults
             // 
             lblSearchResults.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             lblSearchResults.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblSearchResults.Location = new Point(583, 64);
+            lblSearchResults.Location = new Point(583, 42);
             lblSearchResults.Margin = new Padding(0);
             lblSearchResults.Name = "lblSearchResults";
             lblSearchResults.Size = new Size(27, 25);
@@ -214,18 +245,18 @@
             // txtSearch
             // 
             txtSearch.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            txtSearch.Location = new Point(458, 63);
+            txtSearch.Location = new Point(458, 70);
             txtSearch.Name = "txtSearch";
             txtSearch.PlaceholderText = "Find";
             txtSearch.Size = new Size(124, 27);
             txtSearch.TabIndex = 15;
-            txtSearch.Click += Search_Click;
             txtSearch.TextChanged += TxtSearch_TextChanged;
+            txtSearch.KeyDown += TxtSearch_KeyDown;
             // 
             // btnApplyVoice
             // 
             btnApplyVoice.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnApplyVoice.Location = new Point(358, 97);
+            btnApplyVoice.Location = new Point(358, 104);
             btnApplyVoice.Name = "btnApplyVoice";
             btnApplyVoice.Size = new Size(85, 28);
             btnApplyVoice.TabIndex = 14;
@@ -241,13 +272,14 @@
             dgvVoices.Location = new Point(3, 3);
             dgvVoices.Name = "dgvVoices";
             dgvVoices.RowHeadersWidth = 5;
-            dgvVoices.Size = new Size(349, 122);
+            dgvVoices.Size = new Size(349, 129);
             dgvVoices.TabIndex = 13;
+            dgvVoices.CellDoubleClick += DgvVoices_CellDoubleClick;
             // 
             // btnInsertVoicesJson
             // 
             btnInsertVoicesJson.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnInsertVoicesJson.Location = new Point(358, 63);
+            btnInsertVoicesJson.Location = new Point(358, 70);
             btnInsertVoicesJson.Name = "btnInsertVoicesJson";
             btnInsertVoicesJson.Size = new Size(85, 28);
             btnInsertVoicesJson.TabIndex = 12;
@@ -283,11 +315,11 @@
             // 
             txtOut.Dock = DockStyle.Fill;
             txtOut.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            txtOut.Location = new Point(0, 128);
+            txtOut.Location = new Point(0, 135);
             txtOut.Multiline = true;
             txtOut.Name = "txtOut";
             txtOut.ScrollBars = ScrollBars.Vertical;
-            txtOut.Size = new Size(616, 421);
+            txtOut.Size = new Size(616, 414);
             txtOut.TabIndex = 2;
             // 
             // pnlRightTop
@@ -295,7 +327,6 @@
             pnlRightTop.Controls.Add(numFontSize);
             pnlRightTop.Controls.Add(label3);
             pnlRightTop.Controls.Add(btnPauseResume);
-            pnlRightTop.Controls.Add(btnTest);
             pnlRightTop.Controls.Add(numVolume);
             pnlRightTop.Controls.Add(label2);
             pnlRightTop.Controls.Add(numRate);
@@ -305,7 +336,7 @@
             pnlRightTop.Dock = DockStyle.Top;
             pnlRightTop.Location = new Point(0, 0);
             pnlRightTop.Name = "pnlRightTop";
-            pnlRightTop.Size = new Size(616, 128);
+            pnlRightTop.Size = new Size(616, 135);
             pnlRightTop.TabIndex = 0;
             // 
             // numFontSize
@@ -330,17 +361,6 @@
             btnPauseResume.UseVisualStyleBackColor = true;
             btnPauseResume.Click += BtnPauseResume_Click;
             // 
-            // btnTest
-            // 
-            btnTest.Location = new Point(398, 14);
-            btnTest.Name = "btnTest";
-            btnTest.Size = new Size(75, 28);
-            btnTest.TabIndex = 11;
-            btnTest.Text = "Test";
-            btnTest.ToolTipText = null;
-            btnTest.UseVisualStyleBackColor = true;
-            btnTest.Click += BtnTest_Click;
-            // 
             // numVolume
             // 
             numVolume.Increment = new decimal(new int[] { 5, 0, 0, 0 });
@@ -348,7 +368,7 @@
             numVolume.Name = "numVolume";
             numVolume.Size = new Size(54, 27);
             numVolume.TabIndex = 9;
-            numVolume.Value = new decimal(new int[] { 50, 0, 0, 0 });
+            numVolume.Value = new decimal(new int[] { 65, 0, 0, 0 });
             numVolume.ValueChanged += NumVolume_ValueChanged;
             // 
             // numRate
@@ -426,7 +446,7 @@
             // 
             tsmiFileOpen.Name = "tsmiFileOpen";
             tsmiFileOpen.ShortcutKeys = Keys.Control | Keys.O;
-            tsmiFileOpen.Size = new Size(180, 22);
+            tsmiFileOpen.Size = new Size(155, 22);
             tsmiFileOpen.Text = "Open...";
             tsmiFileOpen.ToolTipText = "Open text/story file";
             tsmiFileOpen.Click += TsmiFileOpen_Click;
@@ -435,7 +455,7 @@
             // 
             tsmiFileSave.Name = "tsmiFileSave";
             tsmiFileSave.ShortcutKeys = Keys.Control | Keys.S;
-            tsmiFileSave.Size = new Size(180, 22);
+            tsmiFileSave.Size = new Size(155, 22);
             tsmiFileSave.Text = "Save";
             tsmiFileSave.ToolTipText = "Save changes to opened text/story";
             tsmiFileSave.Click += TsmiFileSave_Click;
@@ -443,7 +463,7 @@
             // tsmiFileBrowse
             // 
             tsmiFileBrowse.Name = "tsmiFileBrowse";
-            tsmiFileBrowse.Size = new Size(180, 22);
+            tsmiFileBrowse.Size = new Size(155, 22);
             tsmiFileBrowse.Text = "Browse...";
             tsmiFileBrowse.Click += TsmiFileBrowse_Click;
             // 
@@ -505,6 +525,7 @@
             Name = "FrmMain";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Story Reader";
+            FormClosing += FrmMain_FormClosing;
             Load += FrmMain_Load;
             KeyDown += FrmMain_KeyDown;
             scMain.Panel1.ResumeLayout(false);
@@ -513,6 +534,8 @@
             scMain.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)scMain).EndInit();
             scMain.ResumeLayout(false);
+            pnlStoryTextHeader.ResumeLayout(false);
+            pnlStoryTextHeader.PerformLayout();
             pnlLeftTop.ResumeLayout(false);
             pnlLeftTop.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dgvVoices).EndInit();
@@ -539,7 +562,6 @@
         private ComboBox cmbVoices;
         private TextBox txtOut;
         private Panel pnlRightTop;
-        private Controls.UcButton btnTest;
         private NumericUpDown numVolume;
         private Label label2;
         private NumericUpDown numRate;
@@ -569,5 +591,7 @@
         private ToolStripMenuItem tsmiFileBrowse;
         private NumericUpDown numFontSize;
         private ToolStripMenuItem tsmiEditUndo;
+        private Panel pnlStoryTextHeader;
+        private Label lblFileHeader;
     }
 }
