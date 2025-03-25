@@ -49,6 +49,7 @@
             cmbVoices = new ComboBox();
             txtOut = new TextBox();
             pnlRightTop = new Panel();
+            button1 = new Button();
             numFontSize = new NumericUpDown();
             btnPauseResume = new StoryReader.Controls.UcButton();
             numVolume = new NumericUpDown();
@@ -69,6 +70,8 @@
             tsmiAddSpaceAfterPunctuation = new ToolStripMenuItem();
             tsmiEditUndo = new ToolStripMenuItem();
             timStatus = new System.Windows.Forms.Timer(components);
+            ttRegex = new ToolTip(components);
+            timKeyPresses = new System.Windows.Forms.Timer(components);
             label2 = new Label();
             label1 = new Label();
             label3 = new Label();
@@ -147,6 +150,7 @@
             txtIn.TabIndex = 1;
             txtIn.Text = "<voice name=\"cousin\">\"Looks like it's your turn to do it\"</voice> my cousin said to me with a smile";
             txtIn.TextChanged += TxtIn_TextChanged;
+            txtIn.KeyDown += TxtIn_KeyDown;
             txtIn.KeyPress += TxtIn_KeyPress;
             // 
             // pnlStoryTextHeader
@@ -324,6 +328,7 @@
             // 
             // pnlRightTop
             // 
+            pnlRightTop.Controls.Add(button1);
             pnlRightTop.Controls.Add(numFontSize);
             pnlRightTop.Controls.Add(label3);
             pnlRightTop.Controls.Add(btnPauseResume);
@@ -338,6 +343,15 @@
             pnlRightTop.Name = "pnlRightTop";
             pnlRightTop.Size = new Size(616, 135);
             pnlRightTop.TabIndex = 0;
+            // 
+            // button1
+            // 
+            button1.Location = new Point(381, 43);
+            button1.Name = "button1";
+            button1.Size = new Size(75, 23);
+            button1.TabIndex = 15;
+            button1.Text = "button1";
+            button1.UseVisualStyleBackColor = true;
             // 
             // numFontSize
             // 
@@ -512,6 +526,18 @@
             timStatus.Interval = 1000;
             timStatus.Tick += TimStatus_Tick;
             // 
+            // ttRegex
+            // 
+            ttRegex.AutoPopDelay = 10000;
+            ttRegex.InitialDelay = 500;
+            ttRegex.ReshowDelay = 100;
+            ttRegex.ToolTipIcon = ToolTipIcon.Info;
+            ttRegex.ToolTipTitle = "Find text using regular expressions";
+            // 
+            // timKeyPresses
+            // 
+            timKeyPresses.Tick += TimKeyPresses_Tick;
+            // 
             // FrmMain
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -527,7 +553,6 @@
             Text = "Story Reader";
             FormClosing += FrmMain_FormClosing;
             Load += FrmMain_Load;
-            KeyDown += FrmMain_KeyDown;
             scMain.Panel1.ResumeLayout(false);
             scMain.Panel1.PerformLayout();
             scMain.Panel2.ResumeLayout(false);
@@ -593,5 +618,8 @@
         private ToolStripMenuItem tsmiEditUndo;
         private Panel pnlStoryTextHeader;
         private Label lblFileHeader;
+        private Button button1;
+        private ToolTip ttRegex;
+        private System.Windows.Forms.Timer timKeyPresses;
     }
 }

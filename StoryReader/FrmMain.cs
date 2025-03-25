@@ -31,9 +31,51 @@ namespace StoryReader
                 IsNewCharOvertype = false;
                 prevTxtInText = txtIn.Text;
                 lblFileHeader.Text = "/";
+                ttRegex.SetToolTip(txtSearch,
+@"\[\d+\] - [1], [2], [3], etc. \d+ → Matches one or more digits (0-9).
+\b means word boundary, so \bfox\b will only match ""fox"" and not ""firefox"".
+^The	Matches ""The"" only if it is at the start of the text
+dog$	\tMatches ""dog"" only if it is at the end of the text
+fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
+                timKeyPresses.Start();
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
+
+        // Ovo je osnova za reagovanje na pritiskanje tastera i u slucaju da prozor nije u fokusu
+        //* https://stackoverflow.com/questions/63663036/how-to-receive-key-presses-when-out-of-focus-c-sharp-forms
+        [DllImport("user32.dll")]
+        static extern ushort GetAsyncKeyState(int vKey);
+
+        public static bool IsKeyPushedDown(Keys vKey)
+        {
+            return 0 != (GetAsyncKeyState((int)vKey) & 0x8000);
+        }
+
+        private void TimKeyPresses_Tick(object sender, EventArgs e)
+        {
+            // Ctrl+Shift+Z - Play/Pause
+            if (IsKeyPushedDown(Keys.ControlKey) && IsKeyPushedDown(Keys.ShiftKey) && IsKeyPushedDown(Keys.Z))
+            {
+                if (speaker.Synth.State == SynthesizerState.Ready)
+                    btnSpeak.PerformClick();
+                else
+                    btnPauseResume.PerformClick();
+            }
+        }
+
+        //private void FrmMain_KeyDown(object sender, KeyEventArgs e)
+        //{
+        //    if (e.KeyCode == Keys.MediaPlayPause)
+        //    {
+        //        if (speaker.Synth.State == SynthesizerState.Ready)
+        //            btnSpeak.PerformClick();
+        //        else
+        //            btnPauseResume.PerformClick();
+        //    }
+        //    if (e.KeyCode == Keys.MediaStop)
+        //        btnStop.PerformClick();
+        //}
 
         private readonly BindingList<Voice> voices = [];
 
@@ -115,13 +157,6 @@ namespace StoryReader
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
-        private void DisplayFileName(string newFileName)
-        {
-            txtIn.Text = File.ReadAllText(fileName = newFileName);
-            var fi = new FileInfo(fileName);
-            lblFileHeader.Text = fi.Name;
-        }
-
         private void DisplayStatus(string s)
         {
             lblLastStatus.Text = s;
@@ -139,11 +174,9 @@ namespace StoryReader
         {
             try
             {
-                //if (fileName != null)
                 if (IsFileChanged)
                 {
-                    //lblFileHeader.Text = lblFileHeader.Text[0..(lblFileHeader.Text.Length - 2)];
-                    DisplayFileName(fileName!);
+                    DisplayFileName();
                     File.WriteAllText(fileName!, txtIn.Text);
                     DisplayStatus("File saved.");
                 }
@@ -159,6 +192,15 @@ namespace StoryReader
                 lblFileHeader.Text += " *";
         }
 
+        private void DisplayFileName()
+        {
+            if (fileName != null)
+            {
+                var fi = new FileInfo(fileName);
+                lblFileHeader.Text = fi.Name;
+            }
+        }
+
         private string? fileName = null;
 
         private void TsmiFileOpen_Click(object sender, EventArgs e)
@@ -167,10 +209,8 @@ namespace StoryReader
             {
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
-                    //txtIn.Text = File.ReadAllText(fileName = ofd.FileName);
-                    //var fi = new FileInfo(fileName);
-                    //lblFileHeader.Text = fi.Name;
-                    DisplayFileName(ofd.FileName);
+                    txtIn.Text = File.ReadAllText(fileName = ofd.FileName);
+                    DisplayFileName();
                     ReadCharVoices();
                 }
             }
@@ -179,12 +219,13 @@ namespace StoryReader
 
         private void ReadCharVoices()
         {
-            if (txtIn.Lines.Length >= 2 && txtIn.Lines[1] == headerSeparator)
+            voices.Clear();
+            var idx = txtIn.Text.IndexOf(headerSeparator + Environment.NewLine);
+            if (idx != -1)
             {
-                var vcs = JsonSerializer.Deserialize<Voice[]>(txtIn.Lines[0]);
+                var vcs = JsonSerializer.Deserialize<Voice[]>(txtIn.Text[..idx]);
                 if (vcs == null)
                     return;
-                voices.Clear();
                 foreach (var v in vcs)
                     voices.Add(v);
             }
@@ -196,13 +237,9 @@ namespace StoryReader
             {
                 var idx = txtIn.Text.IndexOf(headerSeparator);
                 if (idx != -1)
-                {
                     txtIn.Text = txtIn.Text[(idx + headerSeparator.Length + 1)..];
-                }
-                var json = JsonSerializer.Serialize(voices);
+                var json = JsonSerializer.Serialize(voices).Replace("},", "},\r\n");
                 txtIn.Text = $"{json}\r\n{headerSeparator}\r\n{txtIn.Text}";
-                //Clipboard.SetText(json);
-                //txtIn.Lines[0] = json; //! NE RADI
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
@@ -211,35 +248,65 @@ namespace StoryReader
         {
             try
             {
-                int idxStart, lenInsert;
                 if (dgvVoices.CurrentRow?.DataBoundItem is not Voice v)
                     throw new Exception("You have to select a voice to be able to apply it to selected text.");
-                if (txtIn.SelectionLength == 0)
-                {
-                    //var tweenQuot = false;
-                    if (txtIn.SelectionStart > 0 && txtIn.SelectionStart < txtIn.TextLength)
-                    {
-                        idxStart = txtIn.Text.LastIndexOf('"', txtIn.SelectionStart - 1);
-                        var idxEnd = txtIn.Text.IndexOf('"', txtIn.SelectionStart);
-                        if (idxStart != -1 && idxEnd != -1)
-                        {
-                            //tweenQuot = true;
-                            lenInsert = InsertVoiceTags(idxStart, idxEnd - idxStart + 1, v.Character);
-                            //var s = txtIn.Text;
-                            //s = s.Insert(idxEnd, "</voice>");
-                            FocusOnText(idxStart, lenInsert);
-                            return;
-                        }
-                    }
-                    //if (!tweenQuot)
-                    throw new Exception("You have to select some text (or put cursor between quotation marks) to be able to apply selected voice.");
-                }
-                idxStart = txtIn.SelectionStart;
-                var selLen = txtIn.SelectionLength;
-                lenInsert = InsertVoiceTags(idxStart, selLen, v.Character);
-                FocusOnText(idxStart, lenInsert);
+                ApplyVoice(v);
+                //int idxStart, lenInsert;
+                //if (txtIn.SelectionLength == 0)
+                //{
+                //    //var tweenQuot = false;
+                //    if (txtIn.SelectionStart > 0 && txtIn.SelectionStart < txtIn.TextLength)
+                //    {
+                //        idxStart = txtIn.Text.LastIndexOf('"', txtIn.SelectionStart - 1);
+                //        var idxEnd = txtIn.Text.IndexOf('"', txtIn.SelectionStart);
+                //        if (idxStart != -1 && idxEnd != -1)
+                //        {
+                //            //tweenQuot = true;
+                //            lenInsert = InsertVoiceTags(idxStart, idxEnd - idxStart + 1, v.Character);
+                //            //var s = txtIn.Text;
+                //            //s = s.Insert(idxEnd, "</voice>");
+                //            FocusOnText(idxStart, lenInsert);
+                //            return;
+                //        }
+                //    }
+                //    //if (!tweenQuot)
+                //    throw new Exception("You have to select some text (or put cursor between quotation marks) to be able to apply selected voice.");
+                //}
+                //idxStart = txtIn.SelectionStart;
+                //var selLen = txtIn.SelectionLength;
+                //lenInsert = InsertVoiceTags(idxStart, selLen, v.Character);
+                //FocusOnText(idxStart, lenInsert);
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private void ApplyVoice(Voice v)
+        {
+            int idxStart, lenInsert;
+            if (txtIn.SelectionLength == 0)
+            {
+                //var tweenQuot = false;
+                if (txtIn.SelectionStart > 0 && txtIn.SelectionStart < txtIn.TextLength)
+                {
+                    idxStart = txtIn.Text.LastIndexOf('"', txtIn.SelectionStart - 1);
+                    var idxEnd = txtIn.Text.IndexOf('"', txtIn.SelectionStart);
+                    if (idxStart != -1 && idxEnd != -1)
+                    {
+                        //tweenQuot = true;
+                        lenInsert = InsertVoiceTags(idxStart, idxEnd - idxStart + 1, v.Character);
+                        //var s = txtIn.Text;
+                        //s = s.Insert(idxEnd, "</voice>");
+                        FocusOnText(idxStart, lenInsert);
+                        return;
+                    }
+                }
+                //if (!tweenQuot)
+                throw new Exception("You have to select some text (or put cursor between quotation marks) to be able to apply selected voice.");
+            }
+            idxStart = txtIn.SelectionStart;
+            var selLen = txtIn.SelectionLength;
+            lenInsert = InsertVoiceTags(idxStart, selLen, v.Character);
+            FocusOnText(idxStart, lenInsert);
         }
 
         private int InsertVoiceTags(int idxStart, int selLen, string character)
@@ -260,8 +327,17 @@ namespace StoryReader
         private void FocusOnText(int idxStart, int length)
         {
             txtIn.Select(idxStart, length);
+            txtIn.ScrollToCaret();
             var idxLine = txtIn.GetLineFromCharIndex(idxStart);
-            _ = SendMessage(txtIn.Handle, EM_LINESCROLL, 0, idxLine >= 3 ? idxLine - 3 : 0);
+            if (idxLine > 8)
+                _ = SendMessage(txtIn.Handle, EM_LINESCROLL, 0, 6);
+
+            //var idxLine = txtIn.GetLineFromCharIndex(idxStart);
+            //var dUp = idxLine >= 3 ? -3 : 0;
+            //idxLine += dUp;
+            //var changeLines = idxLine - idxLinePrev;
+            //_ = SendMessage(txtIn.Handle, EM_LINESCROLL, 0, changeLines);
+            //idxLinePrev = idxLine;
             txtIn.Focus();
         }
 
@@ -301,7 +377,8 @@ namespace StoryReader
             try
             {
                 //if (string.Equals(txtIn.SelectedText, txtSearch.Text, StringComparison.InvariantCultureIgnoreCase))
-                var match = Regex.Match(txtIn.Text[txtIn.SelectionStart..], txtSearch.Text, RegexOptions.IgnoreCase);
+                //var match = Regex.Match(txtIn.Text[txtIn.SelectionStart..], txtSearch.Text, RegexOptions.IgnoreCase);
+                var match = Regex.Match(txtIn.SelectedText, txtSearch.Text, RegexOptions.IgnoreCase);
                 if (match.Success)
                     txtIn.SelectionStart++;
             }
@@ -320,7 +397,6 @@ namespace StoryReader
                 lblSearchResults.Text = "";
                 return;
             }
-
             try
             {
                 var match = Regex.Match(txtIn.Text[txtIn.SelectionStart..], str, RegexOptions.IgnoreCase);
@@ -334,22 +410,11 @@ namespace StoryReader
                     txtIn.Select(0, 0);
                     lblSearchResults.Text = "❌";
                 }
-
-                //var idx = txtIn.Text.IndexOf(str, txtIn.SelectionStart, StringComparison.InvariantCultureIgnoreCase);
-                //if (idx > -1)
-                //{
-                //    txtIn.Select(idx, str.Length);
-                //    lblSearchResults.Text = "✅";
-                //}
-                //else
-                //{
-                //    txtIn.Select(0, 0);
-                //    lblSearchResults.Text = "❌";
-                //}
                 if (focus)
                     FocusOnText(txtIn.SelectionStart, txtIn.SelectionLength);
             }
-            catch (Exception ex) { MessageBox.Show(ex.Message); }
+            //catch (Exception ex) { MessageBox.Show(ex.Message); }
+            catch (Exception ex) { DisplayStatus(ex.Message); }
         }
 
         private void TxtSearch_TextChanged(object sender, EventArgs e)
@@ -361,10 +426,12 @@ namespace StoryReader
             {
                 if (txtIn.SelectionLength == 0)
                     throw new Exception();
-                var s = txtIn.Text[..txtIn.SelectionStart];
+                var selStart = txtIn.SelectionStart;
+                var s = txtIn.Text[..selStart];
                 s += txtReplace.Text;
-                s += txtIn.Text[(txtIn.SelectionStart + txtIn.SelectionLength)..];
+                s += txtIn.Text[(selStart + txtIn.SelectionLength)..];
                 txtIn.Text = s;
+                txtIn.Select(selStart + 1, 0);
                 FindText(true);
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
@@ -411,6 +478,32 @@ namespace StoryReader
         {
             IsNewCharOvertype = !IsNewCharOvertype;
             DisplayStatus(tsmiInsertOvertype.Text!);
+        }
+
+        private void DgvVoices_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // DoubleClick on any data row that is not new, Character column -> Click on Apply button
+            if (e.RowIndex >= 0 && e.ColumnIndex == 0 && !dgvVoices.Rows[e.RowIndex].IsNewRow)
+                btnApplyVoice.PerformClick();
+        }
+
+        private void TxtIn_KeyDown(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                var k = (int)e.KeyCode;
+                if ((int)Keys.F1 <= k && k <= (int)Keys.F4)
+                {
+                    //e.SuppressKeyPress = true;
+                    //e.Handled = true;
+                    var idxVoice = k - (int)Keys.F1 + 1;
+                    if (idxVoice < voices.Count)
+                        ApplyVoice(voices[idxVoice]);
+                    else
+                        throw new Exception($"There is no voice number {idxVoice} - numbers start from 0. There are {voices.Count} voices.");
+                }
+            }
+            catch (Exception ex) { DisplayStatus(ex.Message); }
         }
 
         private void TxtIn_KeyPress(object sender, KeyPressEventArgs e)
@@ -488,22 +581,6 @@ namespace StoryReader
             txtIn.Font = txtOut.Font = new Font(txtIn.Font.FontFamily, (int)numFontSize.Value);
         }
 
-        private void FrmMain_KeyDown(object sender, KeyEventArgs e)
-        {
-            // Debug.WriteLine(e.KeyCode);
-            if (e.KeyCode == Keys.MediaPlayPause)
-            {
-                //if (speaker.Synth.State == SynthesizerState.Speaking
-                //    || speaker.Synth.State == SynthesizerState.Speaking)
-                if (speaker.Synth.State == SynthesizerState.Ready)
-                    btnSpeak.PerformClick();
-                else
-                    btnPauseResume.PerformClick();
-            }
-            if (e.KeyCode == Keys.MediaStop)
-                btnStop.PerformClick();
-        }
-
         private string prevTxtInText;
 
         private void TsmiEditUndo_Click(object sender, EventArgs e)
@@ -515,13 +592,6 @@ namespace StoryReader
                 txtIn.SelectionStart = idxStart;
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
-        }
-
-        private void DgvVoices_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
-        {
-            // DoubleClick on any data row that is not new, Character column -> Click on Apply button
-            if (e.RowIndex >= 0 && e.ColumnIndex == 0 && !dgvVoices.Rows[e.RowIndex].IsNewRow)
-                btnApplyVoice.PerformClick();
         }
 
         /// <summary>Is the text of a story changed.</summary>
