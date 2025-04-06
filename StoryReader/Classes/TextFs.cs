@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace StoryReader.Classes
+﻿namespace StoryReader.Classes
 {
     public static class TextFs
     {

@@ -7,10 +7,10 @@ Text/story is read by selected voices installed on Windows
 - [ ] Bug fixes:
 	- [ ] Test&improve search with regular expressions
 - [x] Click on Speak -> Don't (stop) + Speak
-- [ ] Make a list of keypresses: documentation (in code) and/or in user interface
-- [ ] Save/Load options (in DataSet?): font size, windows size, searches
-	- [ ] Find text/search: txt -> cmb (recent searches&replaces). test example: "there is a suŃcient body of knowledge about software architecture to Łll up a book"
+- [x] Save/Load settings (in DataSet?): font size, windows size&location, searches
+	- [x] Find text/search: txt -> cmb (recent searches&replaces)
 - [ ] Add new setting: light/dark mode
+- [ ] Make a list of keypresses: documentation (in code) and/or in user interface
 - [ ] Add volume and rate to Voices table (DGV). Maybe switch to DS as a datasource.
 - [ ] Improve txtOut
 	- [ ] Change its type to RichTextBox

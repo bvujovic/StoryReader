@@ -14,4 +14,19 @@
 		<PackageReference Include="System.Speech" Version="9.0.2" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Compile Update="Classes\Ds.Designer.cs">
+	    <DesignTime>True</DesignTime>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>Ds.xsd</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Classes\Ds.xsd">
+	    <Generator>MSDataSetGenerator</Generator>
+	    <LastGenOutput>Ds.Designer.cs</LastGenOutput>
+	  </None>
+	</ItemGroup>
+
 </Project>

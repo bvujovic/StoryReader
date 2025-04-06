@@ -37,11 +37,11 @@
             pnlStoryTextHeader = new Panel();
             lblFileHeader = new Label();
             pnlLeftTop = new Panel();
+            cmbFind = new ComboBox();
             btnReplace = new StoryReader.Controls.UcButton();
-            btnNextReplace = new StoryReader.Controls.UcButton();
+            btnFindNext = new StoryReader.Controls.UcButton();
             txtReplace = new TextBox();
             lblSearchResults = new Label();
-            txtSearch = new TextBox();
             btnApplyVoice = new StoryReader.Controls.UcButton();
             dgvVoices = new DataGridView();
             btnInsertVoicesJson = new StoryReader.Controls.UcButton();
@@ -143,6 +143,7 @@
             txtIn.Dock = DockStyle.Fill;
             txtIn.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             txtIn.Location = new Point(0, 162);
+            txtIn.MaxLength = 100000;
             txtIn.Multiline = true;
             txtIn.Name = "txtIn";
             txtIn.ScrollBars = ScrollBars.Vertical;
@@ -181,11 +182,11 @@
             // 
             // pnlLeftTop
             // 
+            pnlLeftTop.Controls.Add(cmbFind);
             pnlLeftTop.Controls.Add(btnReplace);
-            pnlLeftTop.Controls.Add(btnNextReplace);
+            pnlLeftTop.Controls.Add(btnFindNext);
             pnlLeftTop.Controls.Add(txtReplace);
             pnlLeftTop.Controls.Add(lblSearchResults);
-            pnlLeftTop.Controls.Add(txtSearch);
             pnlLeftTop.Controls.Add(btnApplyVoice);
             pnlLeftTop.Controls.Add(dgvVoices);
             pnlLeftTop.Controls.Add(btnInsertVoicesJson);
@@ -197,6 +198,18 @@
             pnlLeftTop.Size = new Size(616, 135);
             pnlLeftTop.TabIndex = 0;
             pnlLeftTop.Click += StoryTextHeader_Click;
+            // 
+            // cmbFind
+            // 
+            cmbFind.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            cmbFind.FormattingEnabled = true;
+            cmbFind.Location = new Point(458, 69);
+            cmbFind.Name = "cmbFind";
+            cmbFind.Size = new Size(124, 28);
+            cmbFind.TabIndex = 16;
+            cmbFind.SelectedIndexChanged += CmbFind_SelectedIndexChanged;
+            cmbFind.TextChanged += CmbFind_TextChanged;
+            cmbFind.KeyDown += CmbFind_KeyDown;
             // 
             // btnReplace
             // 
@@ -212,19 +225,19 @@
             btnReplace.UseVisualStyleBackColor = true;
             btnReplace.Click += BtnReplace_Click;
             // 
-            // btnNextReplace
+            // btnFindNext
             // 
-            btnNextReplace.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnNextReplace.FlatStyle = FlatStyle.System;
-            btnNextReplace.Font = new Font("Segoe UI", 12F);
-            btnNextReplace.Location = new Point(582, 69);
-            btnNextReplace.Name = "btnNextReplace";
-            btnNextReplace.Size = new Size(29, 29);
-            btnNextReplace.TabIndex = 17;
-            btnNextReplace.Text = "➡";
-            btnNextReplace.ToolTipText = "Move to next";
-            btnNextReplace.UseVisualStyleBackColor = true;
-            btnNextReplace.Click += BtnNextReplace_Click;
+            btnFindNext.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnFindNext.FlatStyle = FlatStyle.System;
+            btnFindNext.Font = new Font("Segoe UI", 12F);
+            btnFindNext.Location = new Point(582, 69);
+            btnFindNext.Name = "btnFindNext";
+            btnFindNext.Size = new Size(29, 29);
+            btnFindNext.TabIndex = 17;
+            btnFindNext.Text = "➡";
+            btnFindNext.ToolTipText = "Move to next";
+            btnFindNext.UseVisualStyleBackColor = true;
+            btnFindNext.Click += BtnFindNext_Click;
             // 
             // txtReplace
             // 
@@ -245,17 +258,6 @@
             lblSearchResults.Size = new Size(27, 25);
             lblSearchResults.TabIndex = 16;
             lblSearchResults.Click += Search_Click;
-            // 
-            // txtSearch
-            // 
-            txtSearch.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            txtSearch.Location = new Point(458, 70);
-            txtSearch.Name = "txtSearch";
-            txtSearch.PlaceholderText = "Find";
-            txtSearch.Size = new Size(124, 27);
-            txtSearch.TabIndex = 15;
-            txtSearch.TextChanged += TxtSearch_TextChanged;
-            txtSearch.KeyDown += TxtSearch_KeyDown;
             // 
             // btnApplyVoice
             // 
@@ -540,8 +542,7 @@
             // 
             // FrmMain
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleMode = AutoScaleMode.None;
             ClientSize = new Size(1236, 595);
             Controls.Add(scMain);
             Controls.Add(stripMenu);
@@ -605,10 +606,9 @@
         private ToolStripStatusLabel lblLastStatus;
         private System.Windows.Forms.Timer timStatus;
         private ToolStripMenuItem editToolStripMenuItem;
-        private TextBox txtSearch;
         private Label lblSearchResults;
         private TextBox txtReplace;
-        private Controls.UcButton btnNextReplace;
+        private Controls.UcButton btnFindNext;
         private Controls.UcButton btnReplace;
         private ToolStripMenuItem tsmiRemoveDuplicateLetters;
         private ToolStripMenuItem tsmiInsertOvertype;
@@ -621,5 +621,6 @@
         private Button button1;
         private ToolTip ttRegex;
         private System.Windows.Forms.Timer timKeyPresses;
+        private ComboBox cmbFind;
     }
 }

@@ -31,16 +31,38 @@ namespace StoryReader
                 IsNewCharOvertype = false;
                 prevTxtInText = txtIn.Text;
                 lblFileHeader.Text = "/";
-                ttRegex.SetToolTip(txtSearch,
+                ttRegex.SetToolTip(cmbFind,
 @"\[\d+\] - [1], [2], [3], etc. \d+ → Matches one or more digits (0-9).
 \b means word boundary, so \bfox\b will only match ""fox"" and not ""firefox"".
 ^The	Matches ""The"" only if it is at the start of the text
 dog$	\tMatches ""dog"" only if it is at the end of the text
 fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 timKeyPresses.Start();
+
+                ds.ReadXml(dataSetFileName);
+                numFontSize.Value = ds.Settings.ReadInt("FontSize", (int)numFontSize.Value);
+                WindowState = ds.Settings.ReadBool("Maximized", false)
+                    ? FormWindowState.Maximized : FormWindowState.Normal;
+                if (WindowState == FormWindowState.Normal)
+                {
+                    var screen = Screen.PrimaryScreen!.WorkingArea;
+                    Left = ds.Settings.ReadInt(nameof(Left), Left, it => it >= 0 && it < screen.Width);
+                    Top = ds.Settings.ReadInt(nameof(Top), Top, it => it >= 0 && it <= screen.Height);
+                    Width = ds.Settings.ReadInt(nameof(Width), Width, it => it > 100 && it <= screen.Width);
+                    Height = ds.Settings.ReadInt(nameof(Height), Height, it => it > 100 && it <= screen.Height);
+                }
+                var json = ds.Settings.ReadString(nameof(SavedSearch.Searches), "[]");
+                SavedSearch.Searches = JsonSerializer.Deserialize<BindingList<SavedSearch>>(json)!;
+                cmbFind.DataSource = SavedSearch.Searches;
+                cmbFind.DisplayMember = nameof(SavedSearch.Find);
+                cmbFind.SelectedIndex = -1;
+                SavedSearch.Enabled = true;
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
+
+        private readonly Ds ds = new();
+        private const string dataSetFileName = "ds.xml";
 
         // Ovo je osnova za reagovanje na pritiskanje tastera i u slucaju da prozor nije u fokusu
         //* https://stackoverflow.com/questions/63663036/how-to-receive-key-presses-when-out-of-focus-c-sharp-forms
@@ -252,31 +274,6 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 if (dgvVoices.CurrentRow?.DataBoundItem is not Voice v)
                     throw new Exception("You have to select a voice to be able to apply it to selected text.");
                 ApplyVoice(v);
-                //int idxStart, lenInsert;
-                //if (txtIn.SelectionLength == 0)
-                //{
-                //    //var tweenQuot = false;
-                //    if (txtIn.SelectionStart > 0 && txtIn.SelectionStart < txtIn.TextLength)
-                //    {
-                //        idxStart = txtIn.Text.LastIndexOf('"', txtIn.SelectionStart - 1);
-                //        var idxEnd = txtIn.Text.IndexOf('"', txtIn.SelectionStart);
-                //        if (idxStart != -1 && idxEnd != -1)
-                //        {
-                //            //tweenQuot = true;
-                //            lenInsert = InsertVoiceTags(idxStart, idxEnd - idxStart + 1, v.Character);
-                //            //var s = txtIn.Text;
-                //            //s = s.Insert(idxEnd, "</voice>");
-                //            FocusOnText(idxStart, lenInsert);
-                //            return;
-                //        }
-                //    }
-                //    //if (!tweenQuot)
-                //    throw new Exception("You have to select some text (or put cursor between quotation marks) to be able to apply selected voice.");
-                //}
-                //idxStart = txtIn.SelectionStart;
-                //var selLen = txtIn.SelectionLength;
-                //lenInsert = InsertVoiceTags(idxStart, selLen, v.Character);
-                //FocusOnText(idxStart, lenInsert);
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
@@ -363,7 +360,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
         private void StoryTextHeader_Click(object sender, EventArgs e)
             => txtIn.Select();
 
-        private void TxtSearch_KeyDown(object sender, KeyEventArgs e)
+        private void CmbFind_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter && txtReplace.Text == "")
             {
@@ -373,15 +370,23 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             }
         }
 
-        private void BtnNextReplace_Click(object sender, EventArgs e)
+        private void CmbFind_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbFind.SelectedItem is SavedSearch ss && ss.Replace != null)
+                txtReplace.Text = ss.Replace;
+            else
+                txtReplace.Text = "";
+        }
+
+        private void BtnFindNext_Click(object sender, EventArgs e)
         {
             try
             {
-                //if (string.Equals(txtIn.SelectedText, txtSearch.Text, StringComparison.InvariantCultureIgnoreCase))
-                //var match = Regex.Match(txtIn.Text[txtIn.SelectionStart..], txtSearch.Text, RegexOptions.IgnoreCase);
-                var match = Regex.Match(txtIn.SelectedText, txtSearch.Text, RegexOptions.IgnoreCase);
+                var match = Regex.Match(txtIn.SelectedText, cmbFind.Text, RegexOptions.IgnoreCase);
                 if (match.Success)
                     txtIn.SelectionStart++;
+                //SavedSearch.Add(cmbFind.Text, txtReplace.Text);
+                //cmbFind.SelectedIndex = 0;
             }
             catch { }
             FindText(true);
@@ -392,7 +397,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
 
         private void FindText(bool focus)
         {
-            var str = txtSearch.Text;
+            var str = cmbFind.Text;
             if (str.Length == 0)
             {
                 lblSearchResults.Text = "";
@@ -400,6 +405,13 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             }
             try
             {
+                if (focus)
+                {
+                    SavedSearch.Add(cmbFind.Text, txtReplace.Text);
+                    SavedSearch.Enabled = false;
+                    cmbFind.SelectedIndex = 0;
+                    SavedSearch.Enabled = true;
+                }
                 var match = Regex.Match(txtIn.Text[txtIn.SelectionStart..], str, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
@@ -414,11 +426,10 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 if (focus)
                     FocusOnText(txtIn.SelectionStart, txtIn.SelectionLength);
             }
-            //catch (Exception ex) { MessageBox.Show(ex.Message); }
             catch (Exception ex) { DisplayStatus(ex.Message); }
         }
 
-        private void TxtSearch_TextChanged(object sender, EventArgs e)
+        private void CmbFind_TextChanged(object sender, EventArgs e)
             => FindText(false);
 
         private void BtnReplace_Click(object sender, EventArgs e)
@@ -609,6 +620,21 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                     e.Cancel = true;
                 if (res == DialogResult.Yes)
                     tsmiFileSave.PerformClick();
+            }
+            if (!e.Cancel)
+            {
+                ds.Settings.SaveSetting("FontSize", numFontSize.Value.ToString());
+                var maximized = WindowState == FormWindowState.Maximized;
+                ds.Settings.SaveSetting("Maximized", maximized.ToString());
+                if (WindowState == FormWindowState.Normal)
+                {
+                    ds.Settings.SaveSetting(nameof(Width), Width.ToString());
+                    ds.Settings.SaveSetting(nameof(Height), Height.ToString());
+                    ds.Settings.SaveSetting(nameof(Left), Left.ToString());
+                    ds.Settings.SaveSetting(nameof(Top), Top.ToString());
+                }
+                ds.Settings.SaveSetting(nameof(SavedSearch.Searches), JsonSerializer.Serialize(SavedSearch.Searches));
+                ds.WriteXml(dataSetFileName);
             }
         }
     }
