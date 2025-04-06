@@ -106,6 +106,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
         {
             try
             {
+                btnStop.PerformClick();
                 var parts = TextFs.SplitSSMLs(SpeechText);
                 TextFs.VoicesForCharacters(parts, voices);
                 TextFs.AddSSMLroot(parts);
