@@ -49,7 +49,6 @@
             cmbVoices = new ComboBox();
             txtOut = new TextBox();
             pnlRightTop = new Panel();
-            button1 = new Button();
             numFontSize = new NumericUpDown();
             btnPauseResume = new StoryReader.Controls.UcButton();
             numVolume = new NumericUpDown();
@@ -69,6 +68,10 @@
             tsmiInsertOvertype = new ToolStripMenuItem();
             tsmiAddSpaceAfterPunctuation = new ToolStripMenuItem();
             tsmiEditUndo = new ToolStripMenuItem();
+            viewToolStripMenuItem = new ToolStripMenuItem();
+            tsmiViewTheme = new ToolStripMenuItem();
+            tsmiLightMode = new ToolStripMenuItem();
+            tsmiDarkMode = new ToolStripMenuItem();
             timStatus = new System.Windows.Forms.Timer(components);
             ttRegex = new ToolTip(components);
             timKeyPresses = new System.Windows.Forms.Timer(components);
@@ -275,6 +278,7 @@
             // 
             dgvVoices.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dgvVoices.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvVoices.EnableHeadersVisualStyles = false;
             dgvVoices.Location = new Point(3, 3);
             dgvVoices.Name = "dgvVoices";
             dgvVoices.RowHeadersWidth = 5;
@@ -330,7 +334,6 @@
             // 
             // pnlRightTop
             // 
-            pnlRightTop.Controls.Add(button1);
             pnlRightTop.Controls.Add(numFontSize);
             pnlRightTop.Controls.Add(label3);
             pnlRightTop.Controls.Add(btnPauseResume);
@@ -345,15 +348,6 @@
             pnlRightTop.Name = "pnlRightTop";
             pnlRightTop.Size = new Size(616, 135);
             pnlRightTop.TabIndex = 0;
-            // 
-            // button1
-            // 
-            button1.Location = new Point(381, 43);
-            button1.Name = "button1";
-            button1.Size = new Size(75, 23);
-            button1.TabIndex = 15;
-            button1.Text = "button1";
-            button1.UseVisualStyleBackColor = true;
             // 
             // numFontSize
             // 
@@ -444,7 +438,7 @@
             // 
             // stripMenu
             // 
-            stripMenu.Items.AddRange(new ToolStripItem[] { tsmiFile, editToolStripMenuItem });
+            stripMenu.Items.AddRange(new ToolStripItem[] { tsmiFile, editToolStripMenuItem, viewToolStripMenuItem });
             stripMenu.Location = new Point(0, 0);
             stripMenu.Name = "stripMenu";
             stripMenu.Size = new Size(1236, 24);
@@ -522,6 +516,38 @@
             tsmiEditUndo.Size = new Size(265, 22);
             tsmiEditUndo.Text = "Undo";
             tsmiEditUndo.Click += TsmiEditUndo_Click;
+            // 
+            // viewToolStripMenuItem
+            // 
+            viewToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { tsmiViewTheme });
+            viewToolStripMenuItem.Name = "viewToolStripMenuItem";
+            viewToolStripMenuItem.Size = new Size(44, 20);
+            viewToolStripMenuItem.Text = "View";
+            // 
+            // tsmiViewTheme
+            // 
+            tsmiViewTheme.DropDownItems.AddRange(new ToolStripItem[] { tsmiLightMode, tsmiDarkMode });
+            tsmiViewTheme.Name = "tsmiViewTheme";
+            tsmiViewTheme.Size = new Size(110, 22);
+            tsmiViewTheme.Text = "Theme";
+            // 
+            // tsmiLightMode
+            // 
+            tsmiLightMode.Checked = true;
+            tsmiLightMode.CheckOnClick = true;
+            tsmiLightMode.CheckState = CheckState.Checked;
+            tsmiLightMode.Name = "tsmiLightMode";
+            tsmiLightMode.Size = new Size(135, 22);
+            tsmiLightMode.Text = "Light Mode";
+            tsmiLightMode.Click += TsmiViewMode_Click;
+            // 
+            // tsmiDarkMode
+            // 
+            tsmiDarkMode.CheckOnClick = true;
+            tsmiDarkMode.Name = "tsmiDarkMode";
+            tsmiDarkMode.Size = new Size(135, 22);
+            tsmiDarkMode.Text = "Dark Mode";
+            tsmiDarkMode.Click += TsmiViewMode_Click;
             // 
             // timStatus
             // 
@@ -618,9 +644,12 @@
         private ToolStripMenuItem tsmiEditUndo;
         private Panel pnlStoryTextHeader;
         private Label lblFileHeader;
-        private Button button1;
         private ToolTip ttRegex;
         private System.Windows.Forms.Timer timKeyPresses;
         private ComboBox cmbFind;
+        private ToolStripMenuItem viewToolStripMenuItem;
+        private ToolStripMenuItem tsmiViewTheme;
+        private ToolStripMenuItem tsmiLightMode;
+        private ToolStripMenuItem tsmiDarkMode;
     }
 }

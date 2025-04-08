@@ -37,7 +37,6 @@ namespace StoryReader
 ^The	Matches ""The"" only if it is at the start of the text
 dog$	\tMatches ""dog"" only if it is at the end of the text
 fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
-                timKeyPresses.Start();
 
                 ds.ReadXml(dataSetFileName);
                 numFontSize.Value = ds.Settings.ReadInt("FontSize", (int)numFontSize.Value);
@@ -57,6 +56,8 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 cmbFind.DisplayMember = nameof(SavedSearch.Find);
                 cmbFind.SelectedIndex = -1;
                 SavedSearch.Enabled = true;
+
+                timKeyPresses.Start();
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
@@ -344,7 +345,8 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             var s = speaker.Synth;
             var paused = s.State == SynthesizerState.Paused;
             btnPauseResume.Text = paused ? "Pause" : "Play";
-            btnPauseResume.BackColor = paused ? SystemColors.Control : Color.LightBlue;
+            btnPauseResume.BackColor = paused ? ThemeColors.LightBackColor : Color.LightBlue;
+            btnPauseResume.ForeColor = ThemeColors.LightForeColor;
             if (paused)
                 s.Resume();
             else
@@ -604,6 +606,76 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 txtIn.SelectionStart = idxStart;
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        public enum AppTheme
+        {
+            Light,
+            Dark
+        }
+
+        public static class ThemeColors
+        {
+            public static Color LightBackColor => Color.White;
+            public static Color LightForeColor => Color.Black;
+
+            public static Color DarkBackColor => Color.FromArgb(30, 30, 30);
+            public static Color DarkForeColor => Color.White;
+        }
+
+        private void TsmiViewMode_Click(object sender, EventArgs e)
+        {
+            if (sender is not ToolStripMenuItem tsmi)
+                return;
+            foreach (ToolStripMenuItem item in tsmiViewTheme.DropDownItems)
+                item.Checked = ReferenceEquals(item, tsmi);
+
+            var theme = AppTheme.Light;
+            if (tsmi.Name == tsmiDarkMode.Name)
+                theme = AppTheme.Dark;
+            ApplyTheme(this, theme);
+        }
+
+        private HashSet<Control> ExcludedControls => [pnlStoryTextHeader, btnSpeak, btnStop, btnPauseResume];
+
+        public void ApplyTheme(Control ctrl, AppTheme theme)
+        {
+            if (!ExcludedControls.Contains(ctrl))
+            {
+                var backColor = (theme == AppTheme.Dark) ? ThemeColors.DarkBackColor : ThemeColors.LightBackColor;
+                var foreColor = (theme == AppTheme.Dark) ? ThemeColors.DarkForeColor : ThemeColors.LightForeColor;
+                ctrl.BackColor = backColor;
+                ctrl.ForeColor = foreColor;
+                if (ReferenceEquals(ctrl, stripMenu))
+                    foreach (ToolStripMenuItem item in stripMenu.Items)
+                        ApplyThemeMenuItems(item, theme);
+                if (ctrl == dgvVoices)
+                    ApplyThemeDGV(dgvVoices, theme);
+                else
+                    foreach (Control child in ctrl.Controls)
+                        ApplyTheme(child, theme);
+            }
+            else
+                ctrl.ForeColor = ThemeColors.LightForeColor;
+        }
+
+        public static void ApplyThemeMenuItems(ToolStripMenuItem item, AppTheme theme)
+        {
+            var backColor = (theme == AppTheme.Dark) ? ThemeColors.DarkBackColor : ThemeColors.LightBackColor;
+            var foreColor = (theme == AppTheme.Dark) ? Color.OrangeRed : ThemeColors.LightForeColor;
+            item.BackColor = backColor;
+            item.ForeColor = foreColor;
+            foreach (ToolStripMenuItem it in item.DropDownItems)
+                ApplyThemeMenuItems(it, theme);
+        }
+
+        private static void ApplyThemeDGV(DataGridView dgv, AppTheme theme)
+        {
+            dgv.BackgroundColor = (theme == AppTheme.Dark) ? ThemeColors.DarkBackColor : ThemeColors.LightBackColor;
+            dgv.DefaultCellStyle.BackColor = (theme == AppTheme.Dark) ? Color.FromArgb(45, 45, 45) : Color.White;
+            dgv.DefaultCellStyle.ForeColor = (theme == AppTheme.Dark) ? Color.White : Color.Black;
+            dgv.DefaultCellStyle.SelectionBackColor = (theme == AppTheme.Dark) ? Color.FromArgb(70, 70, 70) : SystemColors.Highlight;
+            dgv.DefaultCellStyle.SelectionForeColor = (theme == AppTheme.Dark) ? Color.White : SystemColors.HighlightText;
         }
 
         /// <summary>Is the text of a story changed.</summary>
