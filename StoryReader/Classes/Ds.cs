@@ -25,13 +25,13 @@ namespace StoryReader.Classes
                     AddSettingsRow(s);
             }
 
-            public int ReadInt(string name, int defValue, Func<int, bool> ?checkMethod = null)
+            public int ReadInt(string name, int defValue, Func<int, bool>? checkMethod = null)
             {
                 var s = FindByName(name);
                 if (s != null)
                 {
                     var val = int.Parse(s.Value);
-                    if (checkMethod == null) 
+                    if (checkMethod == null)
                         return val;
                     else
                         return checkMethod(val) ? val : defValue;

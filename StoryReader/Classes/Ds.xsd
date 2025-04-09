@@ -9,14 +9,23 @@
       </DataSource>
     </xs:appinfo>
   </xs:annotation>
-  <xs:element name="Ds" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_UserDSName="Ds" msprop:Generator_DataSetName="Ds">
+  <xs:element name="Ds" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:Generator_UserDSName="Ds" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="Ds">
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:element name="Settings" msprop:Generator_RowEvHandlerName="SettingsRowChangeEventHandler" msprop:Generator_RowDeletedName="SettingsRowDeleted" msprop:Generator_RowDeletingName="SettingsRowDeleting" msprop:Generator_RowEvArgName="SettingsRowChangeEvent" msprop:Generator_TablePropName="Settings" msprop:Generator_RowChangedName="SettingsRowChanged" msprop:Generator_RowChangingName="SettingsRowChanging" msprop:Generator_TableClassName="SettingsDataTable" msprop:Generator_RowClassName="SettingsRow" msprop:Generator_TableVarName="tableSettings" msprop:Generator_UserTableName="Settings">
+        <xs:element name="Settings" msprop:Generator_RowClassName="SettingsRow" msprop:Generator_RowEvHandlerName="SettingsRowChangeEventHandler" msprop:Generator_RowDeletedName="SettingsRowDeleted" msprop:Generator_RowDeletingName="SettingsRowDeleting" msprop:Generator_RowEvArgName="SettingsRowChangeEvent" msprop:Generator_TablePropName="Settings" msprop:Generator_RowChangedName="SettingsRowChanged" msprop:Generator_UserTableName="Settings" msprop:Generator_RowChangingName="SettingsRowChanging" msprop:Generator_TableClassName="SettingsDataTable" msprop:Generator_TableVarName="tableSettings">
           <xs:complexType>
             <xs:sequence>
-              <xs:element name="Name" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_ColumnVarNameInTable="columnName" msprop:Generator_UserColumnName="Name" type="xs:string" />
-              <xs:element name="Value" msprop:Generator_ColumnPropNameInRow="Value" msprop:Generator_ColumnPropNameInTable="ValueColumn" msprop:Generator_ColumnVarNameInTable="columnValue" msprop:Generator_UserColumnName="Value" type="xs:string" />
+              <xs:element name="Name" msprop:Generator_UserColumnName="Name" msprop:Generator_ColumnPropNameInTable="NameColumn" msprop:Generator_ColumnPropNameInRow="Name" msprop:Generator_ColumnVarNameInTable="columnName" type="xs:string" />
+              <xs:element name="Value" msprop:Generator_UserColumnName="Value" msprop:Generator_ColumnPropNameInTable="ValueColumn" msprop:Generator_ColumnPropNameInRow="Value" msprop:Generator_ColumnVarNameInTable="columnValue" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Voices" msprop:Generator_RowEvHandlerName="VoicesRowChangeEventHandler" msprop:Generator_RowDeletedName="VoicesRowDeleted" msprop:Generator_RowDeletingName="VoicesRowDeleting" msprop:Generator_RowEvArgName="VoicesRowChangeEvent" msprop:Generator_TablePropName="Voices" msprop:Generator_RowChangedName="VoicesRowChanged" msprop:Generator_RowChangingName="VoicesRowChanging" msprop:Generator_TableClassName="VoicesDataTable" msprop:Generator_RowClassName="VoicesRow" msprop:Generator_TableVarName="tableVoices" msprop:Generator_UserTableName="Voices">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="IdVoice" msdata:AutoIncrement="true" msdata:AutoIncrementSeed="-1" msdata:AutoIncrementStep="-1" msprop:Generator_ColumnPropNameInRow="IdVoice" msprop:Generator_ColumnPropNameInTable="IdVoiceColumn" msprop:Generator_ColumnVarNameInTable="columnIdVoice" msprop:Generator_UserColumnName="IdVoice" type="xs:int" />
+              <xs:element name="Character" msprop:Generator_ColumnPropNameInRow="Character" msprop:Generator_ColumnPropNameInTable="CharacterColumn" msprop:Generator_ColumnVarNameInTable="columnCharacter" msprop:Generator_UserColumnName="Character" type="xs:string" />
+              <xs:element name="VoiceName" msdata:Caption="Voice Name" msprop:Generator_ColumnPropNameInRow="VoiceName" msprop:Generator_ColumnPropNameInTable="VoiceNameColumn" msprop:Generator_ColumnVarNameInTable="columnVoiceName" msprop:Generator_UserColumnName="VoiceName" type="xs:string" />
             </xs:sequence>
           </xs:complexType>
         </xs:element>
@@ -25,6 +34,10 @@
     <xs:unique name="Constraint1" msdata:PrimaryKey="true">
       <xs:selector xpath=".//mstns:Settings" />
       <xs:field xpath="mstns:Name" />
+    </xs:unique>
+    <xs:unique name="Voices_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:Voices" />
+      <xs:field xpath="mstns:IdVoice" />
     </xs:unique>
   </xs:element>
 </xs:schema>

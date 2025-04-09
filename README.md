@@ -6,10 +6,10 @@ Text/story is read by selected voices installed on Windows
 ## TODO
 - [ ] Bug fixes:
 	- [ ] Test&improve search with regular expressions
-	- [ ] Overtype character: autoscroll goes to the top
-- [x] Add new setting: light/dark mode
+	- [x] Overtype character: autoscroll goes to the top
+- [x] Remember setting: light/dark mode
 - [ ] Make a list of keypresses: documentation (in code) and/or in user interface
-- [ ] Add pitch, volume and rate to Voices table (DGV).
+- [ ] Add pitch, volume and rate to Voices table (DGV)
 - [ ] Improve txtOut
 	- [ ] Change its type to RichTextBox
 	- [ ] Mark currently read sentences (underline)

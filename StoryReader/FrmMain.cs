@@ -51,6 +51,12 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                     Height = ds.Settings.ReadInt(nameof(Height), Height, it => it > 100 && it <= screen.Height);
                 }
                 var json = ds.Settings.ReadString(nameof(SavedSearch.Searches), "[]");
+                var theme = (AppTheme)ds.Settings.ReadInt(nameof(AppTheme), 0);
+                if (theme == AppTheme.Light)
+                    tsmiLightMode.PerformClick();
+                else
+                    if (theme == AppTheme.Dark)
+                    tsmiDarkMode.PerformClick();
                 SavedSearch.Searches = JsonSerializer.Deserialize<BindingList<SavedSearch>>(json)!;
                 cmbFind.DataSource = SavedSearch.Searches;
                 cmbFind.DisplayMember = nameof(SavedSearch.Find);
@@ -175,7 +181,14 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                         dgvVoices.Refresh();
                     }
                     else if (!voices.Any(it => it.Character == Voice.Default))
-                        voices.Add(new Voice { Character = Voice.Default, VoiceName = voiceName });
+                        voices.Add(new Voice
+                        {
+                            Character = Voice.Default,
+                            VoiceName = voiceName,
+                            Pitch = "default",
+                            Rate = "default",
+                            Volume = "default"
+                        });
                 }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
@@ -532,6 +545,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                     var s = txtIn.Text.Remove(idxStart, 1);
                     s = s.Insert(idxStart, e.KeyChar.ToString());
                     txtIn.Text = s;
+                    FocusOnText(idxStart, 1);
                     txtIn.Select(idxStart + 1, 0);
                     e.Handled = true;
                 }
@@ -705,6 +719,8 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                     ds.Settings.SaveSetting(nameof(Left), Left.ToString());
                     ds.Settings.SaveSetting(nameof(Top), Top.ToString());
                 }
+                var theme = tsmiLightMode.Checked ? AppTheme.Light : AppTheme.Dark;
+                ds.Settings.SaveSetting(nameof(AppTheme), ((int)theme).ToString());
                 ds.Settings.SaveSetting(nameof(SavedSearch.Searches), JsonSerializer.Serialize(SavedSearch.Searches));
                 ds.WriteXml(dataSetFileName);
             }
