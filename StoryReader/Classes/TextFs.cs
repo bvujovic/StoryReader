@@ -44,8 +44,20 @@
         public static void VoicesForCharacters(List<string> parts, IEnumerable<Voice> voices)
         {
             for (int i = 0; i < parts.Count; i++)
+            {
                 foreach (var v in voices)
-                    parts[i] = parts[i].Replace($"<voice name=\"{v.Character}\">", $"<voice name=\"{v.VoiceName}\">");
+                {
+                    var vol = string.IsNullOrEmpty(v.Volume) ? "medium" : v.Volume;
+                    var rate = string.IsNullOrEmpty(v.Rate) ? "medium" : v.Rate;
+                    var pitch = string.IsNullOrEmpty(v.Pitch) ? "medium" : v.Pitch;
+                    var prosody = $"<prosody volume='{vol}' rate='{rate}' pitch='{pitch}'>";
+                    parts[i] = parts[i].Replace($"<voice name=\"{v.Character}\">"
+                        , $"<voice name=\"{v.VoiceName}\">{prosody}" +
+                        $"");
+                }
+                if (voices.Any())
+                    parts[i] = parts[i].Replace("</voice>", "</prosody></voice>");
+            }
         }
 
         public static void AddSSMLroot(List<string> parts)

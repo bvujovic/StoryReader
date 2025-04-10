@@ -1,4 +1,5 @@
-﻿using StoryReader.Classes;
+﻿using Microsoft.VisualBasic.Logging;
+using StoryReader.Classes;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -23,6 +24,11 @@ namespace StoryReader
                 dgvVoices.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
                 dgvVoices.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 dgvVoices.Columns[1].HeaderText = "Voice Name";
+                for (int i = 0; i < 3; i++)
+                    dgvVoices.Columns.RemoveAt(dgvVoices.Columns.Count - 1);
+                dgvVoices.Columns.Add(CreateDropDownColumn(nameof(Voice.Volume)));
+                dgvVoices.Columns.Add(CreateDropDownColumn(nameof(Voice.Pitch)));
+                dgvVoices.Columns.Add(CreateDropDownColumn(nameof(Voice.Rate)));
                 cmbVoices.Items.Clear();
                 foreach (var v in speaker.Synth.GetInstalledVoices())
                     cmbVoices.Items.Add(v.VoiceInfo.Name);
@@ -66,6 +72,23 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 timKeyPresses.Start();
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private static DataGridViewComboBoxColumn CreateDropDownColumn(string colName)
+        {
+            var col = new DataGridViewComboBoxColumn
+            {
+                DataPropertyName = colName,
+                HeaderText = colName,
+                DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox,
+            };
+            if (colName == nameof(Voice.Volume))
+                col.Items.AddRange("silent", "x-low", "low", "medium", "loud", "x-loud", "");
+            if (colName == nameof(Voice.Pitch))
+                col.Items.AddRange("x-low", "low", "medium", "high", "x-high", "");
+            if (colName == nameof(Voice.Rate))
+                col.Items.AddRange("x-slow", "slow", "medium", "fast", "x-fast", "");
+            return col;
         }
 
         private readonly Ds ds = new();
@@ -185,9 +208,9 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                         {
                             Character = Voice.Default,
                             VoiceName = voiceName,
-                            Pitch = "default",
-                            Rate = "default",
-                            Volume = "default"
+                            Pitch = null,
+                            Rate = null,
+                            Volume = null,
                         });
                 }
             }

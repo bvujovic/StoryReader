@@ -7,13 +7,14 @@
         /// <summary>Name of the installed voice that will be used for the character in a story: Microsoft David Desktop, Microsoft Heera</summary>
         public required string VoiceName { get; set; }
 
-        public required string Volume { get; set; } = "default";
+        //public string Volume { get; set; } = "default";
+        public string? Volume { get; set; }
         // silent, x-low, low, medium, loud, x-loud, default
 
-        public required string Pitch { get; set; } = "default";
+        public string? Pitch { get; set; }
         // x-low, low, medium, high, x-high, default.
 
-        public required string Rate { get; set; } = "default";
+        public string? Rate { get; set; }
         // x-slow, slow, medium, fast, x-fast, or default
 
         public override string ToString()
