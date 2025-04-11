@@ -7,7 +7,7 @@ Text/story is read by selected voices installed on Windows
 - [ ] Bug fixes:
 	- [ ] Test&improve search with regular expressions
 - [ ] Make a list of keypresses: documentation (in code) and/or in user interface
-- [x] Add pitch, volume and rate to Voices table (DGV)
+- [x] Change pitch, volume and rate in Voices table (DGV) from CMB to TXT w/ data validation
 - [ ] Improve txtOut
 	- [ ] Change its type to RichTextBox
 	- [ ] Mark currently read sentences (underline)

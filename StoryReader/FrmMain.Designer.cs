@@ -95,7 +95,7 @@
             // 
             label2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label2.AutoSize = true;
-            label2.Location = new Point(979, 40);
+            label2.Location = new Point(1043, 40);
             label2.Name = "label2";
             label2.Size = new Size(30, 20);
             label2.TabIndex = 7;
@@ -105,7 +105,7 @@
             // 
             label1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label1.AutoSize = true;
-            label1.Location = new Point(979, 7);
+            label1.Location = new Point(1043, 7);
             label1.Name = "label1";
             label1.Size = new Size(39, 20);
             label1.TabIndex = 8;
@@ -115,7 +115,7 @@
             // 
             label3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label3.AutoSize = true;
-            label3.Location = new Point(980, 89);
+            label3.Location = new Point(1044, 89);
             label3.Name = "label3";
             label3.Size = new Size(38, 20);
             label3.TabIndex = 13;
@@ -196,7 +196,7 @@
             // numFontSize
             // 
             numFontSize.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            numFontSize.Location = new Point(1024, 87);
+            numFontSize.Location = new Point(1088, 87);
             numFontSize.Maximum = new decimal(new int[] { 24, 0, 0, 0 });
             numFontSize.Minimum = new decimal(new int[] { 8, 0, 0, 0 });
             numFontSize.Name = "numFontSize";
@@ -221,7 +221,7 @@
             // 
             numVolume.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             numVolume.Increment = new decimal(new int[] { 5, 0, 0, 0 });
-            numVolume.Location = new Point(1024, 38);
+            numVolume.Location = new Point(1088, 38);
             numVolume.Name = "numVolume";
             numVolume.Size = new Size(54, 27);
             numVolume.TabIndex = 9;
@@ -231,7 +231,7 @@
             // numRate
             // 
             numRate.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            numRate.Location = new Point(1024, 5);
+            numRate.Location = new Point(1088, 5);
             numRate.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
             numRate.Minimum = new decimal(new int[] { 10, 0, 0, int.MinValue });
             numRate.Name = "numRate";
@@ -420,7 +420,7 @@
             // 
             cmbVoices.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbVoices.FormattingEnabled = true;
-            cmbVoices.Location = new Point(620, 3);
+            cmbVoices.Location = new Point(669, 3);
             cmbVoices.Name = "cmbVoices";
             cmbVoices.Size = new Size(206, 28);
             cmbVoices.TabIndex = 8;
@@ -428,7 +428,7 @@
             // btnChangeVoiceName
             // 
             btnChangeVoiceName.FlatStyle = FlatStyle.System;
-            btnChangeVoiceName.Location = new Point(827, 2);
+            btnChangeVoiceName.Location = new Point(876, 2);
             btnChangeVoiceName.Name = "btnChangeVoiceName";
             btnChangeVoiceName.Size = new Size(48, 30);
             btnChangeVoiceName.TabIndex = 10;
@@ -439,7 +439,7 @@
             // 
             // btnInsertVoicesJson
             // 
-            btnInsertVoicesJson.Location = new Point(620, 70);
+            btnInsertVoicesJson.Location = new Point(669, 70);
             btnInsertVoicesJson.Name = "btnInsertVoicesJson";
             btnInsertVoicesJson.Size = new Size(85, 28);
             btnInsertVoicesJson.TabIndex = 12;
@@ -455,14 +455,15 @@
             dgvVoices.EnableHeadersVisualStyles = false;
             dgvVoices.Location = new Point(3, 3);
             dgvVoices.Name = "dgvVoices";
-            dgvVoices.RowHeadersWidth = 5;
-            dgvVoices.Size = new Size(611, 129);
+            dgvVoices.RowHeadersWidth = 40;
+            dgvVoices.Size = new Size(660, 129);
             dgvVoices.TabIndex = 13;
             dgvVoices.CellDoubleClick += DgvVoices_CellDoubleClick;
+            dgvVoices.CellValidating += DgvVoices_CellValidating;
             // 
             // btnApplyVoice
             // 
-            btnApplyVoice.Location = new Point(620, 104);
+            btnApplyVoice.Location = new Point(669, 104);
             btnApplyVoice.Name = "btnApplyVoice";
             btnApplyVoice.Size = new Size(85, 28);
             btnApplyVoice.TabIndex = 14;
@@ -474,7 +475,7 @@
             // lblSearchResults
             // 
             lblSearchResults.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblSearchResults.Location = new Point(845, 42);
+            lblSearchResults.Location = new Point(894, 42);
             lblSearchResults.Margin = new Padding(0);
             lblSearchResults.Name = "lblSearchResults";
             lblSearchResults.Size = new Size(27, 25);
@@ -483,7 +484,7 @@
             // 
             // txtReplace
             // 
-            txtReplace.Location = new Point(720, 102);
+            txtReplace.Location = new Point(769, 102);
             txtReplace.Name = "txtReplace";
             txtReplace.PlaceholderText = "Replace";
             txtReplace.Size = new Size(124, 27);
@@ -493,7 +494,7 @@
             // 
             btnFindNext.FlatStyle = FlatStyle.System;
             btnFindNext.Font = new Font("Segoe UI", 12F);
-            btnFindNext.Location = new Point(844, 69);
+            btnFindNext.Location = new Point(893, 69);
             btnFindNext.Name = "btnFindNext";
             btnFindNext.Size = new Size(29, 29);
             btnFindNext.TabIndex = 17;
@@ -506,7 +507,7 @@
             // 
             btnReplace.FlatStyle = FlatStyle.System;
             btnReplace.Font = new Font("Segoe UI", 12F);
-            btnReplace.Location = new Point(844, 101);
+            btnReplace.Location = new Point(893, 101);
             btnReplace.Name = "btnReplace";
             btnReplace.Size = new Size(29, 29);
             btnReplace.TabIndex = 19;
@@ -518,7 +519,7 @@
             // cmbFind
             // 
             cmbFind.FormattingEnabled = true;
-            cmbFind.Location = new Point(720, 69);
+            cmbFind.Location = new Point(769, 69);
             cmbFind.Name = "cmbFind";
             cmbFind.Size = new Size(124, 28);
             cmbFind.TabIndex = 16;

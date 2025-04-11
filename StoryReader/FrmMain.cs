@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualBasic.Logging;
-using StoryReader.Classes;
+﻿using StoryReader.Classes;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -24,11 +23,13 @@ namespace StoryReader
                 dgvVoices.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
                 dgvVoices.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 dgvVoices.Columns[1].HeaderText = "Voice Name";
-                for (int i = 0; i < 3; i++)
-                    dgvVoices.Columns.RemoveAt(dgvVoices.Columns.Count - 1);
-                dgvVoices.Columns.Add(CreateDropDownColumn(nameof(Voice.Volume)));
-                dgvVoices.Columns.Add(CreateDropDownColumn(nameof(Voice.Pitch)));
-                dgvVoices.Columns.Add(CreateDropDownColumn(nameof(Voice.Rate)));
+                dgvVoices.Columns[nameof(Voice.Volume)]!.ToolTipText
+                    = string.Join(", ", VoiceHelpers.VolumeConstants) + Environment.NewLine + "123%";
+                dgvVoices.Columns[nameof(Voice.Pitch)]!.ToolTipText
+                    = string.Join(", ", VoiceHelpers.PitchConstants);
+                dgvVoices.Columns[nameof(Voice.Rate)]!.ToolTipText
+                    = string.Join(", ", VoiceHelpers.RateConstants) + Environment.NewLine + "123%";
+
                 cmbVoices.Items.Clear();
                 foreach (var v in speaker.Synth.GetInstalledVoices())
                     cmbVoices.Items.Add(v.VoiceInfo.Name);
@@ -74,21 +75,20 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
-        private static DataGridViewComboBoxColumn CreateDropDownColumn(string colName)
+        private void DgvVoices_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
         {
-            var col = new DataGridViewComboBoxColumn
+            var c = dgvVoices.Columns[e.ColumnIndex];
+            if (c == null ||
+                (c.Name != nameof(Voice.Volume) && c.Name != nameof(Voice.Pitch) && c.Name != nameof(Voice.Rate)))
+                return;
+            var s = e.FormattedValue?.ToString();
+            if (VoiceHelpers.IsStringValid(s, c.Name))
+                dgvVoices.Rows[e.RowIndex].ErrorText = string.Empty;
+            else
             {
-                DataPropertyName = colName,
-                HeaderText = colName,
-                DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox,
-            };
-            if (colName == nameof(Voice.Volume))
-                col.Items.AddRange("silent", "x-low", "low", "medium", "loud", "x-loud", "");
-            if (colName == nameof(Voice.Pitch))
-                col.Items.AddRange("x-low", "low", "medium", "high", "x-high", "");
-            if (colName == nameof(Voice.Rate))
-                col.Items.AddRange("x-slow", "slow", "medium", "fast", "x-fast", "");
-            return col;
+                e.Cancel = true;
+                dgvVoices.Rows[e.RowIndex].ErrorText = "Invalid input!";
+            }
         }
 
         private readonly Ds ds = new();

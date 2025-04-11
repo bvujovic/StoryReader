@@ -15,7 +15,6 @@
         // x-low, low, medium, high, x-high, default.
 
         public string? Rate { get; set; }
-        // x-slow, slow, medium, fast, x-fast, or default
 
         public override string ToString()
             => $"{Character}: {VoiceName}";
