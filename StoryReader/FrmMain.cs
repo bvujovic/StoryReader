@@ -69,7 +69,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 cmbFind.DisplayMember = nameof(SavedSearch.Find);
                 cmbFind.SelectedIndex = -1;
                 SavedSearch.Enabled = true;
-
+                speaker.Synth.SpeakCompleted += Synth_SpeakCompleted;
                 timKeyPresses.Start();
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
@@ -154,24 +154,84 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             }
         }
 
+        private readonly Story story = new();
+
         private void BtnSpeak_Click(object sender, EventArgs e)
         {
             try
             {
+                if (voices.Count == 0)
+                    throw new Exception("You have to define at least one voice (default).");
                 btnStop.PerformClick();
                 var parts = TextFs.SplitSSMLs(SpeechText);
-                TextFs.VoicesForCharacters(parts, voices);
-                TextFs.AddSSMLroot(parts);
-                txtOut.Clear();
-                speaker.Synth.Volume = (int)numVolume.Value;
-                speaker.Synth.Rate = (int)numRate.Value;
-                foreach (var p in parts)
+                story.Clear();
+                foreach (var strPart in parts)
                 {
-                    speaker.AddToSpeak(p);
-                    txtOut.Text += p + Environment.NewLine;
+                    var p = TextFs.CreatePart(strPart, voices);
+                    story.AddPart(p);
                 }
+                // display story in RTB - parts in colors
+                //rtbOut.Rtf = story.ToRtf();
+
+                var part = story.GetNextPart();
+                if (part != null)
+                    speaker.Speak(part.ToSSML());
+
+                //btnStop.PerformClick();
+                //var parts = TextFs.SplitSSMLs(SpeechText);
+                //TextFs.VoicesForCharacters(parts, voices);
+                //TextFs.AddSSMLroot(parts);
+                //txtOut.Clear();
+                //speaker.Synth.Volume = (int)numVolume.Value;
+                //speaker.Synth.Rate = (int)numRate.Value;
+                //foreach (var p in parts)
+                //{
+                //    speaker.AddToSpeak(p);
+                //    txtOut.Text += p + Environment.NewLine;
+                //}
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private void Synth_SpeakCompleted(object? sender, SpeakCompletedEventArgs e)
+        {
+            //...
+        }
+
+        private void Button1_Click(object sender, EventArgs e)
+        {
+            // grey:    \red155\green155\blue155;
+            // red:     \red128\green0\blue0;
+            // pink:    \red185\green105\blue145;
+            // green:   \red0\green128\blue64;
+            // blue:    \red0\green64\blue128;
+            // brown:   \red90\green64\blue64;
+            // orange:  \red240\green155\blue90;
+
+            // class Story: parts, [separators: space, newParagraph], [current]textReading, Read(idxChar/idxPart)
+            // reakcija na dogadjaj kada je part procitan kako bi se znalo kada da se pokrene citanje novog part-a
+            // metode: string ToRtf()
+
+            // class Part: string text, Voice voice
+
+            try
+            {
+                rtbOut.Rtf =
+@"{\rtf1\ansi{\colortbl;\red128\green0\blue0; \red185\green105\blue145; \red240\green155\blue90; \red90\green64\blue64;}
+This is \highlight1 red background text.\par
+This is \highlight0 green background \highlight4 text.\par\par
+This is \highlight3 blue background text.\par}";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void RtbOut_SelectionChanged(object sender, EventArgs e)
+        {
+            Debug.WriteLine(rtbOut.SelectionBackColor);
+            Debug.WriteLine(rtbOut.SelectionStart);
         }
 
         private readonly Speaker speaker = new();

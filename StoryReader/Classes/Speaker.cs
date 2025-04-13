@@ -34,6 +34,11 @@ namespace StoryReader.Classes
             //    synth.SpeakAsync(speakerSounds.Dequeue().ToString());
         }
 
+        public void Speak(string ssml)
+        {
+            synth.SpeakSsmlAsync(ssml);
+        }
+
         /// <summary>Add string </summary>
         public void AddToSpeak(string text)
         {
