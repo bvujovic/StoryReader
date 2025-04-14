@@ -8,12 +8,13 @@ namespace StoryReader.Classes
         public required Voice Voice { get; set; }
 
         public override string ToString()
-            => $"{Voice.Character}: {Text[..30]}";
+            //=> $"{Voice.Character}: {Text[..30]}{(Text.Length > 30 ? "..." : "")}";
+            => $"{Voice.Character}: " + (Text.Length > 30 ? $"{Text[..30]}..." : Text);
 
         public string ToSSML()
         {
-            throw new NotImplementedException();
-            //TODO use functions from TextFs class
+            var s = TextFs.VoiceForCharacter(Text, Voice);
+            return TextFs.AddSSMLroot(s);
         }
     }
 }

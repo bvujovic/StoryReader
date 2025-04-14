@@ -36,8 +36,6 @@
             txtIn = new TextBox();
             pnlStoryTextHeader = new Panel();
             lblFileHeader = new Label();
-            splitContainer1 = new SplitContainer();
-            txtOut = new TextBox();
             rtbOut = new RichTextBox();
             numFontSize = new NumericUpDown();
             btnPauseResume = new StoryReader.Controls.UcButton();
@@ -85,10 +83,6 @@
             scMain.Panel2.SuspendLayout();
             scMain.SuspendLayout();
             pnlStoryTextHeader.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
-            splitContainer1.Panel1.SuspendLayout();
-            splitContainer1.Panel2.SuspendLayout();
-            splitContainer1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numFontSize).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numVolume).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numRate).BeginInit();
@@ -142,7 +136,7 @@
             // 
             // scMain.Panel2
             // 
-            scMain.Panel2.Controls.Add(splitContainer1);
+            scMain.Panel2.Controls.Add(rtbOut);
             scMain.Size = new Size(1236, 414);
             scMain.SplitterDistance = 616;
             scMain.TabIndex = 0;
@@ -158,7 +152,6 @@
             txtIn.ScrollBars = ScrollBars.Vertical;
             txtIn.Size = new Size(616, 387);
             txtIn.TabIndex = 1;
-            txtIn.Text = "<voice name=\"cousin\">\"Looks like it's your turn to do it\"</voice> my cousin said to me with a smile";
             txtIn.TextChanged += TxtIn_TextChanged;
             txtIn.KeyDown += TxtIn_KeyDown;
             txtIn.KeyPress += TxtIn_KeyPress;
@@ -189,44 +182,14 @@
             lblFileHeader.Text = "story.txt";
             lblFileHeader.Click += StoryTextHeader_Click;
             // 
-            // splitContainer1
-            // 
-            splitContainer1.Dock = DockStyle.Fill;
-            splitContainer1.Location = new Point(0, 0);
-            splitContainer1.Name = "splitContainer1";
-            splitContainer1.Orientation = Orientation.Horizontal;
-            // 
-            // splitContainer1.Panel1
-            // 
-            splitContainer1.Panel1.Controls.Add(txtOut);
-            // 
-            // splitContainer1.Panel2
-            // 
-            splitContainer1.Panel2.Controls.Add(rtbOut);
-            splitContainer1.Size = new Size(616, 414);
-            splitContainer1.SplitterDistance = 207;
-            splitContainer1.TabIndex = 3;
-            // 
-            // txtOut
-            // 
-            txtOut.Dock = DockStyle.Fill;
-            txtOut.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            txtOut.Location = new Point(0, 0);
-            txtOut.Multiline = true;
-            txtOut.Name = "txtOut";
-            txtOut.ScrollBars = ScrollBars.Vertical;
-            txtOut.Size = new Size(616, 207);
-            txtOut.TabIndex = 2;
-            // 
             // rtbOut
             // 
             rtbOut.Dock = DockStyle.Fill;
             rtbOut.Location = new Point(0, 0);
             rtbOut.Name = "rtbOut";
-            rtbOut.Size = new Size(616, 203);
-            rtbOut.TabIndex = 0;
+            rtbOut.Size = new Size(616, 414);
+            rtbOut.TabIndex = 4;
             rtbOut.Text = "";
-            rtbOut.SelectionChanged += RtbOut_SelectionChanged;
             // 
             // numFontSize
             // 
@@ -455,7 +418,7 @@
             // 
             cmbVoices.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbVoices.FormattingEnabled = true;
-            cmbVoices.Location = new Point(669, 3);
+            cmbVoices.Location = new Point(771, 3);
             cmbVoices.Name = "cmbVoices";
             cmbVoices.Size = new Size(206, 28);
             cmbVoices.TabIndex = 8;
@@ -463,7 +426,7 @@
             // btnChangeVoiceName
             // 
             btnChangeVoiceName.FlatStyle = FlatStyle.System;
-            btnChangeVoiceName.Location = new Point(876, 2);
+            btnChangeVoiceName.Location = new Point(978, 2);
             btnChangeVoiceName.Name = "btnChangeVoiceName";
             btnChangeVoiceName.Size = new Size(48, 30);
             btnChangeVoiceName.TabIndex = 10;
@@ -474,7 +437,7 @@
             // 
             // btnInsertVoicesJson
             // 
-            btnInsertVoicesJson.Location = new Point(669, 70);
+            btnInsertVoicesJson.Location = new Point(771, 70);
             btnInsertVoicesJson.Name = "btnInsertVoicesJson";
             btnInsertVoicesJson.Size = new Size(85, 28);
             btnInsertVoicesJson.TabIndex = 12;
@@ -491,14 +454,14 @@
             dgvVoices.Location = new Point(3, 3);
             dgvVoices.Name = "dgvVoices";
             dgvVoices.RowHeadersWidth = 40;
-            dgvVoices.Size = new Size(660, 129);
+            dgvVoices.Size = new Size(762, 129);
             dgvVoices.TabIndex = 13;
             dgvVoices.CellDoubleClick += DgvVoices_CellDoubleClick;
             dgvVoices.CellValidating += DgvVoices_CellValidating;
             // 
             // btnApplyVoice
             // 
-            btnApplyVoice.Location = new Point(669, 104);
+            btnApplyVoice.Location = new Point(771, 104);
             btnApplyVoice.Name = "btnApplyVoice";
             btnApplyVoice.Size = new Size(85, 28);
             btnApplyVoice.TabIndex = 14;
@@ -510,7 +473,7 @@
             // lblSearchResults
             // 
             lblSearchResults.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblSearchResults.Location = new Point(894, 42);
+            lblSearchResults.Location = new Point(996, 42);
             lblSearchResults.Margin = new Padding(0);
             lblSearchResults.Name = "lblSearchResults";
             lblSearchResults.Size = new Size(27, 25);
@@ -519,7 +482,7 @@
             // 
             // txtReplace
             // 
-            txtReplace.Location = new Point(769, 102);
+            txtReplace.Location = new Point(871, 102);
             txtReplace.Name = "txtReplace";
             txtReplace.PlaceholderText = "Replace";
             txtReplace.Size = new Size(124, 27);
@@ -529,7 +492,7 @@
             // 
             btnFindNext.FlatStyle = FlatStyle.System;
             btnFindNext.Font = new Font("Segoe UI", 12F);
-            btnFindNext.Location = new Point(893, 69);
+            btnFindNext.Location = new Point(995, 69);
             btnFindNext.Name = "btnFindNext";
             btnFindNext.Size = new Size(29, 29);
             btnFindNext.TabIndex = 17;
@@ -542,7 +505,7 @@
             // 
             btnReplace.FlatStyle = FlatStyle.System;
             btnReplace.Font = new Font("Segoe UI", 12F);
-            btnReplace.Location = new Point(893, 101);
+            btnReplace.Location = new Point(995, 101);
             btnReplace.Name = "btnReplace";
             btnReplace.Size = new Size(29, 29);
             btnReplace.TabIndex = 19;
@@ -554,7 +517,7 @@
             // cmbFind
             // 
             cmbFind.FormattingEnabled = true;
-            cmbFind.Location = new Point(769, 69);
+            cmbFind.Location = new Point(871, 69);
             cmbFind.Name = "cmbFind";
             cmbFind.Size = new Size(124, 28);
             cmbFind.TabIndex = 16;
@@ -593,11 +556,11 @@
             // 
             // button1
             // 
-            button1.Location = new Point(876, 38);
+            button1.Location = new Point(931, 37);
             button1.Name = "button1";
-            button1.Size = new Size(75, 23);
+            button1.Size = new Size(95, 26);
             button1.TabIndex = 20;
-            button1.Text = "button1";
+            button1.Text = "RTF colors";
             button1.UseVisualStyleBackColor = true;
             button1.Click += Button1_Click;
             // 
@@ -623,11 +586,6 @@
             scMain.ResumeLayout(false);
             pnlStoryTextHeader.ResumeLayout(false);
             pnlStoryTextHeader.PerformLayout();
-            splitContainer1.Panel1.ResumeLayout(false);
-            splitContainer1.Panel1.PerformLayout();
-            splitContainer1.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
-            splitContainer1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)numFontSize).EndInit();
             ((System.ComponentModel.ISupportInitialize)numVolume).EndInit();
             ((System.ComponentModel.ISupportInitialize)numRate).EndInit();
@@ -646,7 +604,6 @@
 
         private SplitContainer scMain;
         private TextBox txtIn;
-        private TextBox txtOut;
         private NumericUpDown numVolume;
         private Label label2;
         private NumericUpDown numRate;
@@ -688,8 +645,7 @@
         private Controls.UcButton btnReplace;
         private ComboBox cmbFind;
         private Panel pnlTop;
-        private SplitContainer splitContainer1;
-        private RichTextBox rtbOut;
         private Button button1;
+        private RichTextBox rtbOut;
     }
 }

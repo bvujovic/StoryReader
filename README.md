@@ -7,11 +7,12 @@ Text/story is read by selected voices installed on Windows
 - [ ] Bug fixes:
 	- [ ] Test&improve search with regular expressions
 - [ ] Make a list of keypresses: documentation (in code) and/or in user interface
-- [x] Change pitch, volume and rate in Voices table (DGV) from CMB to TXT w/ data validation
+- [x] Add Color column to dgvVoices
+- [ ] Remember folder of the last oppened file/story
 - [ ] Improve txtOut
-	- [ ] Change its type to RichTextBox
+	- [x] Change its type to RichTextBox
 	- [ ] Mark currently read sentences (underline)
-	- [ ] Mark different characters lines (back color - define a color in DGV)
+	- [x] Mark different characters lines (back color - define a color in DGV)
 	- [ ] User should play sentences by clicking on them; arrow keys: next/prev sentence
 - [ ] Add File/New: New text/story
 - [ ] Add button Validate, on click check:

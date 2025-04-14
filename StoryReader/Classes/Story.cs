@@ -44,16 +44,22 @@
             return CurrentPart;
         }
 
-        // public void ReadPrevPart()
+        // public void GetPrevPart()
 
         public override string ToString()
         {
             return string.Join(Environment.NewLine, parts);
         }
 
+        // display story in RTB - parts in colors
         public string ToRtf()
         {
-            return ToString();
+            var voices = parts.Select(it => it.Voice).Distinct().ToList();
+            var colors = voices.Select(it => VoiceColor.AllColors.First(c => c.Name == it.Color).RTF).ToList();
+            var colorTable = $"{{\\colortbl; {string.Join(" ", colors)}}}";
+            var s = string.Join(
+                Environment.NewLine, parts.Select(it => "\\highlight" + (voices.IndexOf(it.Voice)+1) + it.Text));
+            return $"{{\\rtf1\\ansi {colorTable} {s.Replace(Environment.NewLine, "\\par ")}}}";
         }
     }
 }

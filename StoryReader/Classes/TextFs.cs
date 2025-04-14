@@ -65,49 +65,45 @@
             return new Part { Text = str, Voice = v };
         }
 
-        public static void VoiceForCharacter(List<string> parts, IEnumerable<Voice> voices)
+        public static string VoiceForCharacter(string part, Voice v)
         {
-            for (int i = 0; i < parts.Count; i++)
-            {
-                foreach (var v in voices)
-                {
-                    var vol = string.IsNullOrEmpty(v.Volume) ? "medium" : v.Volume;
-                    var rate = string.IsNullOrEmpty(v.Rate) ? "medium" : v.Rate;
-                    var pitch = string.IsNullOrEmpty(v.Pitch) ? "medium" : v.Pitch;
-                    var prosody = $"<prosody volume='{vol}' rate='{rate}' pitch='{pitch}'>";
-                    parts[i] = parts[i].Replace($"<voice name=\"{v.Character}\">"
-                        , $"<voice name=\"{v.VoiceName}\">{prosody}" +
-                        $"");
-                }
-                if (parts[i].Contains("<prosody"))
-                    parts[i] = parts[i].Replace("</voice>", "</prosody></voice>");
-            }
+            var vol = string.IsNullOrEmpty(v.Volume) ? "medium" : v.Volume;
+            var rate = string.IsNullOrEmpty(v.Rate) ? "medium" : v.Rate;
+            var pitch = string.IsNullOrEmpty(v.Pitch) ? "medium" : v.Pitch;
+            var prosody = $"<prosody volume='{vol}' rate='{rate}' pitch='{pitch}'>";
+            return $"<voice name=\"{v.VoiceName}\">{prosody}{part}</prosody></voice>";
         }
 
-        public static void VoicesForCharacters(List<string> parts, IEnumerable<Voice> voices)
-        {
-            for (int i = 0; i < parts.Count; i++)
-            {
-                foreach (var v in voices)
-                {
-                    var vol = string.IsNullOrEmpty(v.Volume) ? "medium" : v.Volume;
-                    var rate = string.IsNullOrEmpty(v.Rate) ? "medium" : v.Rate;
-                    var pitch = string.IsNullOrEmpty(v.Pitch) ? "medium" : v.Pitch;
-                    var prosody = $"<prosody volume='{vol}' rate='{rate}' pitch='{pitch}'>";
-                    parts[i] = parts[i].Replace($"<voice name=\"{v.Character}\">"
-                        , $"<voice name=\"{v.VoiceName}\">{prosody}" +
-                        $"");
-                }
-                if (parts[i].Contains("<prosody"))
-                    parts[i] = parts[i].Replace("</voice>", "</prosody></voice>");
-            }
-        }
+        //public static void VoicesForCharacters(List<string> parts, IEnumerable<Voice> voices)
+        //{
+        //    for (int i = 0; i < parts.Count; i++)
+        //    {
+        //        foreach (var v in voices)
+        //        {
+        //            var vol = string.IsNullOrEmpty(v.Volume) ? "medium" : v.Volume;
+        //            var rate = string.IsNullOrEmpty(v.Rate) ? "medium" : v.Rate;
+        //            var pitch = string.IsNullOrEmpty(v.Pitch) ? "medium" : v.Pitch;
+        //            var prosody = $"<prosody volume='{vol}' rate='{rate}' pitch='{pitch}'>";
+        //            parts[i] = parts[i].Replace($"<voice name=\"{v.Character}\">"
+        //                , $"<voice name=\"{v.VoiceName}\">{prosody}" +
+        //                $"");
+        //        }
+        //        if (parts[i].Contains("<prosody"))
+        //            parts[i] = parts[i].Replace("</voice>", "</prosody></voice>");
+        //    }
+        //}
 
-        public static void AddSSMLroot(List<string> parts)
+        //public static void AddSSMLroot(List<string> parts)
+        //{
+        //    for (int i = 0; i < parts.Count; i++)
+        //        parts[i] = "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\">\r\n"
+        //            + parts[i] + "\r\n</speak>\r\n";
+        //}
+
+        public static string AddSSMLroot(string part)
         {
-            for (int i = 0; i < parts.Count; i++)
-                parts[i] = "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\">\r\n"
-                    + parts[i] + "\r\n</speak>\r\n";
+            return "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\">\r\n"
+                + part + "\r\n</speak>\r\n";
         }
     }
 }

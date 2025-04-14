@@ -29,6 +29,8 @@ namespace StoryReader
                     = string.Join(", ", VoiceHelpers.PitchConstants);
                 dgvVoices.Columns[nameof(Voice.Rate)]!.ToolTipText
                     = string.Join(", ", VoiceHelpers.RateConstants) + Environment.NewLine + "123%";
+                dgvVoices.Columns.RemoveAt(2);
+                dgvVoices.Columns.Insert(2, CreateDropDownColumn("Color"));
 
                 cmbVoices.Items.Clear();
                 foreach (var v in speaker.Synth.GetInstalledVoices())
@@ -73,6 +75,19 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 timKeyPresses.Start();
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private static DataGridViewComboBoxColumn CreateDropDownColumn(string colName)
+        {
+            var col = new DataGridViewComboBoxColumn
+            {
+                DataPropertyName = colName,
+                HeaderText = colName,
+                DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox,
+            };
+            col.Items.Add("");
+            col.Items.AddRange(VoiceColor.AllColors.Select(it => it.Name).ToArray());
+            return col;
         }
 
         private void DgvVoices_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
@@ -170,12 +185,17 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                     var p = TextFs.CreatePart(strPart, voices);
                     story.AddPart(p);
                 }
-                // display story in RTB - parts in colors
-                //rtbOut.Rtf = story.ToRtf();
 
                 var part = story.GetNextPart();
                 if (part != null)
+                {
+                    speachStarted = true;
+                    speaker.Synth.Volume = (int)numVolume.Value;
+                    speaker.Synth.Rate = (int)numRate.Value;
                     speaker.Speak(part.ToSSML());
+                }
+
+                rtbOut.Rtf = story.ToRtf();
 
                 //btnStop.PerformClick();
                 //var parts = TextFs.SplitSSMLs(SpeechText);
@@ -195,19 +215,15 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
 
         private void Synth_SpeakCompleted(object? sender, SpeakCompletedEventArgs e)
         {
-            //...
+            var part = story.GetNextPart();
+            if (part != null && speachStarted)
+                speaker.Speak(part.ToSSML());
+            else
+                speachStarted = false;
         }
 
         private void Button1_Click(object sender, EventArgs e)
         {
-            // grey:    \red155\green155\blue155;
-            // red:     \red128\green0\blue0;
-            // pink:    \red185\green105\blue145;
-            // green:   \red0\green128\blue64;
-            // blue:    \red0\green64\blue128;
-            // brown:   \red90\green64\blue64;
-            // orange:  \red240\green155\blue90;
-
             // class Story: parts, [separators: space, newParagraph], [current]textReading, Read(idxChar/idxPart)
             // reakcija na dogadjaj kada je part procitan kako bi se znalo kada da se pokrene citanje novog part-a
             // metode: string ToRtf()
@@ -236,10 +252,13 @@ This is \highlight3 blue background text.\par}";
 
         private readonly Speaker speaker = new();
 
+        private bool speachStarted = false;
+
         private void BtnStop_Click(object sender, EventArgs e)
         {
             try
             {
+                speachStarted = false;
                 var paused = speaker.Synth.State == SynthesizerState.Paused;
                 speaker.Stop();
                 if (paused)
@@ -689,7 +708,7 @@ This is \highlight3 blue background text.\par}";
 
         private void NumFontSize_ValueChanged(object sender, EventArgs e)
         {
-            txtIn.Font = txtOut.Font = new Font(txtIn.Font.FontFamily, (int)numFontSize.Value);
+            txtIn.Font = rtbOut.Font = new Font(txtIn.Font.FontFamily, (int)numFontSize.Value);
         }
 
         private string prevTxtInText;
