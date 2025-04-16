@@ -74,6 +74,37 @@
             return $"<voice name=\"{v.VoiceName}\">{prosody}{part}</prosody></voice>";
         }
 
+        public static IEnumerable<string> SplitSentences(string s)
+        {
+            //var sentenceSeparators = new char[] { '.', '?', '!' };
+            //var ss = new List<string>();
+            //foreach (var sentence in s.Split(sentenceSeparators))
+            //    ss.Add(sentence.Trim());
+            //return ss;
+
+            //var sentenceSeparators = new string[] { ".", "?", "!", Environment.NewLine };
+            var sentenceSeparators = new char[] { '.', '?', '!', '\r', '\n' };
+            var sents = new List<string>();
+            var sent = string.Empty;
+            var atTheEnd = false;
+            for (int i = 0; i < s.Length; i++)
+            {
+                if (sentenceSeparators.Contains(s[i]))
+                    atTheEnd = true;
+                else if (atTheEnd)
+                {
+                    sents.Add(sent);
+                    atTheEnd = false;
+                    sent = string.Empty;
+                }
+                sent += s[i];
+            }
+            sent = sent.Trim();
+            if (sent.Length > 0)
+                sents.Add(sent);
+            return sents;
+        }
+
         //public static void VoicesForCharacters(List<string> parts, IEnumerable<Voice> voices)
         //{
         //    for (int i = 0; i < parts.Count; i++)

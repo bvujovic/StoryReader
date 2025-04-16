@@ -37,6 +37,8 @@
             pnlStoryTextHeader = new Panel();
             lblFileHeader = new Label();
             rtbOut = new RichTextBox();
+            ctxOut = new ContextMenuStrip(components);
+            tsmiOut_FindSelection = new ToolStripMenuItem();
             numFontSize = new NumericUpDown();
             btnPauseResume = new StoryReader.Controls.UcButton();
             numVolume = new NumericUpDown();
@@ -74,7 +76,8 @@
             btnReplace = new StoryReader.Controls.UcButton();
             cmbFind = new ComboBox();
             pnlTop = new Panel();
-            button1 = new Button();
+            btnForward = new Button();
+            btnBackward = new Button();
             label2 = new Label();
             label1 = new Label();
             label3 = new Label();
@@ -83,6 +86,7 @@
             scMain.Panel2.SuspendLayout();
             scMain.SuspendLayout();
             pnlStoryTextHeader.SuspendLayout();
+            ctxOut.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numFontSize).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numVolume).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numRate).BeginInit();
@@ -116,7 +120,7 @@
             // 
             label3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label3.AutoSize = true;
-            label3.Location = new Point(1044, 89);
+            label3.Location = new Point(1045, 73);
             label3.Name = "label3";
             label3.Size = new Size(38, 20);
             label3.TabIndex = 13;
@@ -184,17 +188,33 @@
             // 
             // rtbOut
             // 
+            rtbOut.ContextMenuStrip = ctxOut;
             rtbOut.Dock = DockStyle.Fill;
+            rtbOut.Font = new Font("Segoe UI", 12F);
             rtbOut.Location = new Point(0, 0);
             rtbOut.Name = "rtbOut";
             rtbOut.Size = new Size(616, 414);
             rtbOut.TabIndex = 4;
             rtbOut.Text = "";
             // 
+            // ctxOut
+            // 
+            ctxOut.Items.AddRange(new ToolStripItem[] { tsmiOut_FindSelection });
+            ctxOut.Name = "ctxOut";
+            ctxOut.Size = new Size(149, 26);
+            ctxOut.Opening += CtxOut_Opening;
+            // 
+            // tsmiOut_FindSelection
+            // 
+            tsmiOut_FindSelection.Name = "tsmiOut_FindSelection";
+            tsmiOut_FindSelection.Size = new Size(148, 22);
+            tsmiOut_FindSelection.Text = "Find Selection";
+            tsmiOut_FindSelection.Click += TsmiOut_FindSelection_Click;
+            // 
             // numFontSize
             // 
             numFontSize.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            numFontSize.Location = new Point(1088, 87);
+            numFontSize.Location = new Point(1089, 71);
             numFontSize.Maximum = new decimal(new int[] { 24, 0, 0, 0 });
             numFontSize.Minimum = new decimal(new int[] { 8, 0, 0, 0 });
             numFontSize.Name = "numFontSize";
@@ -457,6 +477,7 @@
             dgvVoices.Size = new Size(762, 129);
             dgvVoices.TabIndex = 13;
             dgvVoices.CellDoubleClick += DgvVoices_CellDoubleClick;
+            dgvVoices.CellValidated += DgvVoices_CellValidated;
             dgvVoices.CellValidating += DgvVoices_CellValidating;
             // 
             // btnApplyVoice
@@ -527,7 +548,8 @@
             // 
             // pnlTop
             // 
-            pnlTop.Controls.Add(button1);
+            pnlTop.Controls.Add(btnForward);
+            pnlTop.Controls.Add(btnBackward);
             pnlTop.Controls.Add(numFontSize);
             pnlTop.Controls.Add(cmbFind);
             pnlTop.Controls.Add(label3);
@@ -554,15 +576,30 @@
             pnlTop.Size = new Size(1236, 135);
             pnlTop.TabIndex = 3;
             // 
-            // button1
+            // btnForward
             // 
-            button1.Location = new Point(931, 37);
-            button1.Name = "button1";
-            button1.Size = new Size(95, 26);
-            button1.TabIndex = 20;
-            button1.Text = "RTF colors";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += Button1_Click;
+            btnForward.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnForward.Font = new Font("Segoe UI", 12F);
+            btnForward.Location = new Point(1188, 104);
+            btnForward.Name = "btnForward";
+            btnForward.Size = new Size(36, 29);
+            btnForward.TabIndex = 21;
+            btnForward.Text = "⏩";
+            btnForward.UseVisualStyleBackColor = true;
+            btnForward.Click += BtnForward_Click;
+            // 
+            // btnBackward
+            // 
+            btnBackward.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnBackward.Font = new Font("Segoe UI", 12F);
+            btnBackward.Location = new Point(1149, 104);
+            btnBackward.Margin = new Padding(0);
+            btnBackward.Name = "btnBackward";
+            btnBackward.Size = new Size(36, 29);
+            btnBackward.TabIndex = 20;
+            btnBackward.Text = "⏪";
+            btnBackward.UseVisualStyleBackColor = true;
+            btnBackward.Click += BtnBackward_Click;
             // 
             // FrmMain
             // 
@@ -586,6 +623,7 @@
             scMain.ResumeLayout(false);
             pnlStoryTextHeader.ResumeLayout(false);
             pnlStoryTextHeader.PerformLayout();
+            ctxOut.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)numFontSize).EndInit();
             ((System.ComponentModel.ISupportInitialize)numVolume).EndInit();
             ((System.ComponentModel.ISupportInitialize)numRate).EndInit();
@@ -645,7 +683,10 @@
         private Controls.UcButton btnReplace;
         private ComboBox cmbFind;
         private Panel pnlTop;
-        private Button button1;
+        private Button btnBackward;
         private RichTextBox rtbOut;
+        private ContextMenuStrip ctxOut;
+        private ToolStripMenuItem tsmiOut_FindSelection;
+        private Button btnForward;
     }
 }

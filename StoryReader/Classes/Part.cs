@@ -16,5 +16,13 @@ namespace StoryReader.Classes
             var s = TextFs.VoiceForCharacter(Text, Voice);
             return TextFs.AddSSMLroot(s);
         }
+
+        public string ToRtf(List<Voice> voices, Part? current)
+        {
+            // green \ul background\ulnone  text
+            var isCurrent = this != null && this == current;
+            return "\\highlight" + (voices.IndexOf(Voice) + 1) 
+                + (isCurrent ? "{\\ul " : "") + Text + (isCurrent ? "\\ulnone}" : "");
+        }
     }
 }

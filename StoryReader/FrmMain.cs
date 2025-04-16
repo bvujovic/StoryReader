@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Speech.Synthesis;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace StoryReader
 {
@@ -101,8 +102,38 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 dgvVoices.Rows[e.RowIndex].ErrorText = string.Empty;
             else
             {
-                e.Cancel = true;
-                dgvVoices.Rows[e.RowIndex].ErrorText = "Invalid input!";
+                var isNumber = int.TryParse(s, out int x);
+                if (isNumber && (c.Name == nameof(Voice.Volume) || c.Name == nameof(Voice.Rate)))
+                {
+                    dgvVoices.Rows[e.RowIndex].ErrorText = string.Empty;
+                    if (dgvVoices.CurrentRow?.DataBoundItem is Voice v)
+                    {
+                        dgvVoices_ValidVoice = v;
+                        dgvVoices_ValidColumn = c.Name;
+                    }
+                    else
+                        dgvVoices_ValidVoice = null;
+                }
+                else
+                {
+                    e.Cancel = true;
+                    dgvVoices.Rows[e.RowIndex].ErrorText = "Invalid input!";
+                }
+            }
+        }
+
+        private Voice? dgvVoices_ValidVoice = null;
+        private string dgvVoices_ValidColumn;
+
+        private void DgvVoices_CellValidated(object sender, DataGridViewCellEventArgs e)
+        {
+            if (dgvVoices_ValidVoice != null)
+            {
+                if (dgvVoices_ValidColumn == nameof(Voice.Volume))
+                    dgvVoices_ValidVoice.Volume += "%";
+                if (dgvVoices_ValidColumn == nameof(Voice.Rate))
+                    dgvVoices_ValidVoice.Rate += "%";
+                dgvVoices_ValidVoice = null;
             }
         }
 
@@ -183,19 +214,20 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 foreach (var strPart in parts)
                 {
                     var p = TextFs.CreatePart(strPart, voices);
-                    story.AddPart(p);
+                    var ss = TextFs.SplitSentences(p.Text);
+                    foreach (var s in ss)
+                        story.AddPart(new Part { Text = s, Voice = p.Voice });
                 }
 
                 var part = story.GetNextPart();
                 if (part != null)
                 {
-                    speachStarted = true;
+                    //speachStarted = true;
                     speaker.Synth.Volume = (int)numVolume.Value;
                     speaker.Synth.Rate = (int)numRate.Value;
                     speaker.Speak(part.ToSSML());
                 }
-
-                rtbOut.Rtf = story.ToRtf();
+                DisplayStory();
 
                 //btnStop.PerformClick();
                 //var parts = TextFs.SplitSSMLs(SpeechText);
@@ -213,34 +245,72 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
-        private void Synth_SpeakCompleted(object? sender, SpeakCompletedEventArgs e)
+        private void DisplayStory()
         {
-            var part = story.GetNextPart();
-            if (part != null && speachStarted)
-                speaker.Speak(part.ToSSML());
-            else
-                speachStarted = false;
+            rtbOut.Rtf = story.ToRtf();
+            //rtbOut.Font = new Font(txtIn.Font.FontFamily, (int)numFontSize.Value + 1);
+            //rtbOut.Font = new Font(txtIn.Font.FontFamily, (int)numFontSize.Value);
+            rtbOut.Font = new Font(txtIn.Font.FontFamily, (float)numFontSize.Value + 0.1f);
         }
 
-        private void Button1_Click(object sender, EventArgs e)
+        private void Synth_SpeakCompleted(object? sender, SpeakCompletedEventArgs e)
         {
-            // class Story: parts, [separators: space, newParagraph], [current]textReading, Read(idxChar/idxPart)
-            // reakcija na dogadjaj kada je part procitan kako bi se znalo kada da se pokrene citanje novog part-a
-            // metode: string ToRtf()
+            //var part = story.GetNextPart();
+            //if (part != null && speachStarted)
+            //    speaker.Speak(part.ToSSML());
+            //else
+            //    speachStarted = false;
 
-            // class Part: string text, Voice voice
+            //Debug.WriteLine($"{e.Prompt}, {e.UserState}, {e.Error}, {e.Cancelled}");
+            //Debug.WriteLine(DateTime.Now.Second + " - Completed, IsStopped: " + speaker.IsStopped);
+            //if (speaker.IsStopped)
+            if (e.Cancelled)
+                return;
+            var part = story.GetNextPart();
+            if (part != null)
+            {
+                //Debug.WriteLine("Completed Next");
+                speaker.Speak(part.ToSSML());
+                rtbOut.BeginInvoke((MethodInvoker)delegate { DisplayStory(); });
+            }
+            else
+                //speachStarted = false;
+                speaker.Stop();
+        }
 
+        private DateTime lastSentenceBack = DateTime.MinValue;
+
+        private void BtnBackward_Click(object sender, EventArgs e)
+        {
             try
             {
-                rtbOut.Rtf =
-@"{\rtf1\ansi{\colortbl;\red128\green0\blue0; \red185\green105\blue145; \red240\green155\blue90; \red90\green64\blue64;}
-This is \highlight1 red background text.\par
-This is \highlight0 green background \highlight4 text.\par\par
-This is \highlight3 blue background text.\par}";
+                speaker.Stop();
+                var part = ((DateTime.Now - lastSentenceBack).TotalSeconds < 2)
+                    ? story.GetPrevPart() : story.CurrentPart;
+                if (part != null)
+                {
+                    DisplayStory();
+                    speaker.Speak(part.ToSSML());
+                }
+                lastSentenceBack = DateTime.Now;
             }
-            catch (Exception ex)
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private void BtnForward_Click(object sender, EventArgs e)
+        {
+            //rtbOut.Rtf = @"{\rtf1\ansi{\colortbl;\red255\green255\blue255;\red255\green0\blue0;\red0\green255\blue0;\red0\green0\blue255;}
+            //This is \highlight1 red background text.\par
+            //This is \highlight2 green \ul background\ulnone  text.\par
+            //This is \highlight3 blue background text.\par}";
+
+            speaker.Stop();
+            var part = story.GetNextPart();
+            if (part != null)
             {
-                MessageBox.Show(ex.Message);
+                //rtbOut.Rtf = story.ToRtf();
+                DisplayStory();
+                speaker.Speak(part.ToSSML());
             }
         }
 
@@ -252,16 +322,15 @@ This is \highlight3 blue background text.\par}";
 
         private readonly Speaker speaker = new();
 
-        private bool speachStarted = false;
+        //B private bool speachStarted = false;
 
         private void BtnStop_Click(object sender, EventArgs e)
         {
             try
             {
-                speachStarted = false;
-                var paused = speaker.Synth.State == SynthesizerState.Paused;
+                //speachStarted = false;
                 speaker.Stop();
-                if (paused)
+                if (speaker.Synth.State == SynthesizerState.Paused)
                     btnPauseResume.PerformClick();
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
@@ -566,6 +635,16 @@ This is \highlight3 blue background text.\par}";
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
+        private void TsmiOut_FindSelection_Click(object sender, EventArgs e)
+        {
+            var match = Regex.Match(txtIn.Text, rtbOut.SelectedText, RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                txtIn.Select(match.Index, match.Length);
+                FocusOnText(txtIn.SelectionStart, txtIn.SelectionLength);
+            }
+        }
+
         private void TsmiRemoveDuplicateLetters_Click(object sender, EventArgs e)
         {
             try
@@ -709,6 +788,7 @@ This is \highlight3 blue background text.\par}";
         private void NumFontSize_ValueChanged(object sender, EventArgs e)
         {
             txtIn.Font = rtbOut.Font = new Font(txtIn.Font.FontFamily, (int)numFontSize.Value);
+            DisplayStory();
         }
 
         private string prevTxtInText;
@@ -826,6 +906,12 @@ This is \highlight3 blue background text.\par}";
                 ds.Settings.SaveSetting(nameof(SavedSearch.Searches), JsonSerializer.Serialize(SavedSearch.Searches));
                 ds.WriteXml(dataSetFileName);
             }
+        }
+
+        private void CtxOut_Opening(object sender, CancelEventArgs e)
+        {
+            //Debug.WriteLine(rtbOut.SelectionLength);
+            tsmiOut_FindSelection.Enabled = rtbOut.SelectionLength > 0;
         }
     }
 }

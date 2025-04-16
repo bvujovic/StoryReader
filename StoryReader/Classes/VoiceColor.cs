@@ -6,10 +6,7 @@
 
         public Color Color { get; set; } = color;
 
-        public string RTF
-        {
-            get => $"\\red{Color.R}\\green{Color.G}\\blue{Color.B};";
-        }
+        public string RTF => $"\\red{Color.R}\\green{Color.G}\\blue{Color.B};";
 
         public override string ToString()
             => Name;
@@ -34,6 +31,7 @@
             new VoiceColor("blue", Color.FromArgb(0, 64, 128)),
             new VoiceColor("brown", Color.FromArgb(90, 64, 64)),
             new VoiceColor("grey", Color.FromArgb(155, 155, 155)),
+            new VoiceColor("dark", Color.FromArgb(30, 30, 30)),
         ];
     }
 }

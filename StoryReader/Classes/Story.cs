@@ -44,7 +44,18 @@
             return CurrentPart;
         }
 
-        // public void GetPrevPart()
+        public Part? GetPrevPart()
+        {
+            //if (parts.Count == 0)
+            //    return null;
+            if (parts.Count == 0 || idxCurrentPart == 0)
+            {
+                idxCurrentPart = -1;
+                return null;
+            }
+            idxCurrentPart--;
+            return CurrentPart;
+        }
 
         public override string ToString()
         {
@@ -57,9 +68,13 @@
             var voices = parts.Select(it => it.Voice).Distinct().ToList();
             var colors = voices.Select(it => VoiceColor.AllColors.First(c => c.Name == it.Color).RTF).ToList();
             var colorTable = $"{{\\colortbl; {string.Join(" ", colors)}}}";
-            var s = string.Join(
-                Environment.NewLine, parts.Select(it => "\\highlight" + (voices.IndexOf(it.Voice)+1) + it.Text));
-            return $"{{\\rtf1\\ansi {colorTable} {s.Replace(Environment.NewLine, "\\par ")}}}";
+            if (voices.Count == 0)
+                return string.Empty;
+            var s = parts.First().ToRtf(voices, CurrentPart);
+            for (var i = 1; i < parts.Count; i++)
+                s += (Equals(parts[i - 1].Voice, parts[i].Voice) ? " " : Environment.NewLine) + parts[i].ToRtf(voices, CurrentPart);
+            s = $"{{\\rtf1\\ansi {colorTable}{s.Replace(Environment.NewLine, "\\par ")}}}";
+            return s.Replace("č", "\\u269x").Replace("ć", "\\u263x").Replace("đ", "\\u273x");
         }
     }
 }

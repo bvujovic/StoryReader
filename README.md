@@ -6,13 +6,13 @@ Text/story is read by selected voices installed on Windows
 ## TODO
 - [ ] Bug fixes:
 	- [ ] Test&improve search with regular expressions
+- [ ] Code cleanup: remove commented lines of code in FrmMain, Speaker
+- [x] Add context menu with Find Selection: find selected text from rtbOut in txtIn
+- [x] User can enter a number without '%' for Volume or Rate in dgvVoices
 - [ ] Make a list of keypresses: documentation (in code) and/or in user interface
-- [x] Add Color column to dgvVoices
-- [ ] Remember folder of the last oppened file/story
+	- [ ] Keypresses: 4, 5, 6 (on numeric keyboard) for backward, play/pause, forward?
 - [ ] Improve txtOut
-	- [x] Change its type to RichTextBox
-	- [ ] Mark currently read sentences (underline)
-	- [x] Mark different characters lines (back color - define a color in DGV)
+	- [x] Mark currently read sentences (underline)
 	- [ ] User should play sentences by clicking on them; arrow keys: next/prev sentence
 - [ ] Add File/New: New text/story
 - [ ] Add button Validate, on click check:
