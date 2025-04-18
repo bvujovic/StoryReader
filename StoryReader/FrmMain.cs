@@ -67,6 +67,8 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 else
                     if (theme == AppTheme.Dark)
                     tsmiDarkMode.PerformClick();
+                fileName = ds.Settings.ReadString(nameof(fileName));
+                LoadFile(fileName);
                 SavedSearch.Searches = JsonSerializer.Deserialize<BindingList<SavedSearch>>(json)!;
                 cmbFind.DataSource = SavedSearch.Searches;
                 cmbFind.DisplayMember = nameof(SavedSearch.Find);
@@ -74,9 +76,12 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 SavedSearch.Enabled = true;
                 speaker.Synth.SpeakCompleted += Synth_SpeakCompleted;
                 timKeyPresses.Start();
+                isFormLoading = false;
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
+
+        private bool isFormLoading = true;
 
         private static DataGridViewComboBoxColumn CreateDropDownColumn(string colName)
         {
@@ -87,7 +92,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox,
             };
             col.Items.Add("");
-            col.Items.AddRange(VoiceColor.AllColors.Select(it => it.Name).ToArray());
+            col.Items.AddRange(VoiceColorHelpers.AllColors.Select(it => it.Name).ToArray());
             return col;
         }
 
@@ -222,60 +227,46 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 var part = story.GetNextPart();
                 if (part != null)
                 {
-                    //speachStarted = true;
                     speaker.Synth.Volume = (int)numVolume.Value;
                     speaker.Synth.Rate = (int)numRate.Value;
                     speaker.Speak(part.ToSSML());
                 }
                 DisplayStory();
-
-                //btnStop.PerformClick();
-                //var parts = TextFs.SplitSSMLs(SpeechText);
-                //TextFs.VoicesForCharacters(parts, voices);
-                //TextFs.AddSSMLroot(parts);
-                //txtOut.Clear();
-                //speaker.Synth.Volume = (int)numVolume.Value;
-                //speaker.Synth.Rate = (int)numRate.Value;
-                //foreach (var p in parts)
-                //{
-                //    speaker.AddToSpeak(p);
-                //    txtOut.Text += p + Environment.NewLine;
-                //}
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
         private void DisplayStory()
         {
-            rtbOut.Rtf = story.ToRtf();
-            //rtbOut.Font = new Font(txtIn.Font.FontFamily, (int)numFontSize.Value + 1);
-            //rtbOut.Font = new Font(txtIn.Font.FontFamily, (int)numFontSize.Value);
-            rtbOut.Font = new Font(txtIn.Font.FontFamily, (float)numFontSize.Value + 0.1f);
+            var rtf = story.ToRtf();
+            //Debug.WriteLine(rtf);
+            rtbOut.Rtf = rtf;
+
+            rtbOut.Select(0, 1);
+            //Debug.WriteLine(rtbOut.SelectedRtf.Contains("ul"));
+            if (!story.IsCurrentPartFirst && rtbOut.SelectedRtf.Contains("ul"))
+            {
+                rtbOut.Font = new Font(txtIn.Font.FontFamily, (float)numFontSize.Value + 0.1f);
+                //rtbOut.Font = new Font(txtIn.Font.FontFamily, (int)numFontSize.Value);
+            }
         }
 
         private void Synth_SpeakCompleted(object? sender, SpeakCompletedEventArgs e)
         {
-            //var part = story.GetNextPart();
-            //if (part != null && speachStarted)
-            //    speaker.Speak(part.ToSSML());
-            //else
-            //    speachStarted = false;
-
-            //Debug.WriteLine($"{e.Prompt}, {e.UserState}, {e.Error}, {e.Cancelled}");
-            //Debug.WriteLine(DateTime.Now.Second + " - Completed, IsStopped: " + speaker.IsStopped);
-            //if (speaker.IsStopped)
             if (e.Cancelled)
                 return;
             var part = story.GetNextPart();
             if (part != null)
             {
-                //Debug.WriteLine("Completed Next");
                 speaker.Speak(part.ToSSML());
                 rtbOut.BeginInvoke((MethodInvoker)delegate { DisplayStory(); });
             }
             else
-                //speachStarted = false;
+            {
                 speaker.Stop();
+                story.SetCurrentPartNull();
+                DisplayStory();
+            }
         }
 
         private DateTime lastSentenceBack = DateTime.MinValue;
@@ -308,7 +299,6 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             var part = story.GetNextPart();
             if (part != null)
             {
-                //rtbOut.Rtf = story.ToRtf();
                 DisplayStory();
                 speaker.Speak(part.ToSSML());
             }
@@ -322,14 +312,13 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
 
         private readonly Speaker speaker = new();
 
-        //B private bool speachStarted = false;
-
         private void BtnStop_Click(object sender, EventArgs e)
         {
             try
             {
-                //speachStarted = false;
                 speaker.Stop();
+                story.SetCurrentPartNull();
+                DisplayStory();
                 if (speaker.Synth.State == SynthesizerState.Paused)
                     btnPauseResume.PerformClick();
             }
@@ -359,6 +348,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                             Pitch = null,
                             Rate = null,
                             Volume = null,
+                            Color = VoiceColorHelpers.Default.Name,
                         });
                 }
             }
@@ -407,6 +397,8 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 var fi = new FileInfo(fileName);
                 lblFileHeader.Text = fi.Name;
             }
+            else
+                lblFileHeader.Text = "";
         }
 
         private string? fileName = null;
@@ -416,12 +408,25 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             try
             {
                 if (ofd.ShowDialog() == DialogResult.OK)
-                {
-                    txtIn.Text = File.ReadAllText(fileName = ofd.FileName);
-                    DisplayFileName();
-                    ReadCharVoices();
-                }
+                    LoadFile(ofd.FileName);
             }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private void LoadFile(string? file)
+        {
+            fileName = file;
+            txtIn.Text = (file != null) ? File.ReadAllText(file) : "";
+            txtIn.Select(0, 0);
+            rtbOut.Clear();
+            ds.Settings.SaveSetting(nameof(fileName), file);
+            DisplayFileName();
+            ReadCharVoices();
+        }
+
+        private void TsmiFileClose_Click(object sender, EventArgs e)
+        {
+            try { LoadFile(null); }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
@@ -468,22 +473,17 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             int idxStart, lenInsert;
             if (txtIn.SelectionLength == 0)
             {
-                //var tweenQuot = false;
                 if (txtIn.SelectionStart > 0 && txtIn.SelectionStart < txtIn.TextLength)
                 {
                     idxStart = txtIn.Text.LastIndexOf('"', txtIn.SelectionStart - 1);
                     var idxEnd = txtIn.Text.IndexOf('"', txtIn.SelectionStart);
                     if (idxStart != -1 && idxEnd != -1)
                     {
-                        //tweenQuot = true;
                         lenInsert = InsertVoiceTags(idxStart, idxEnd - idxStart + 1, v.Character);
-                        //var s = txtIn.Text;
-                        //s = s.Insert(idxEnd, "</voice>");
                         FocusOnText(idxStart, lenInsert);
                         return;
                     }
                 }
-                //if (!tweenQuot)
                 throw new Exception("You have to select some text (or put cursor between quotation marks) to be able to apply selected voice.");
             }
             idxStart = txtIn.SelectionStart;
@@ -571,8 +571,6 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 var match = Regex.Match(txtIn.SelectedText, cmbFind.Text, RegexOptions.IgnoreCase);
                 if (match.Success)
                     txtIn.SelectionStart++;
-                //SavedSearch.Add(cmbFind.Text, txtReplace.Text);
-                //cmbFind.SelectedIndex = 0;
             }
             catch { }
             FindText(true);
@@ -583,6 +581,8 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
 
         private void FindText(bool focus)
         {
+            if (isFormLoading)
+                return;
             var str = cmbFind.Text;
             if (str.Length == 0)
             {
@@ -910,8 +910,74 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
 
         private void CtxOut_Opening(object sender, CancelEventArgs e)
         {
-            //Debug.WriteLine(rtbOut.SelectionLength);
             tsmiOut_FindSelection.Enabled = rtbOut.SelectionLength > 0;
         }
+
+        private void Button1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // remove new lines that cut sentences (made in PDF)
+                if (txtIn.SelectionLength == 0)
+                    throw new Exception("You have to select some text to be able to use this function.");
+                var sentenceSeparators = new char[] { '.', '?', '!', ':', ';' };
+                var s = txtIn.SelectedText;
+                var idxStart = 0;
+                while (true)
+                {
+                    var idxNewLine = s.IndexOf(Environment.NewLine, idxStart);
+                    if (idxNewLine == -1)
+                        break;
+                    var idx = idxNewLine;
+                    while (idx-- >= 0 && char.IsWhiteSpace(s[idx]))
+                        ;
+                    if (!sentenceSeparators.Contains(s[idx]))
+                    {
+                        s = s[..(idx + 1)] + " " + s[(idxNewLine + 2)..];
+                        idxStart = idxNewLine + 1;
+                    }
+                    else
+                        idxStart = idxNewLine + 2;
+                }
+                txtIn.Text = txtIn.Text[..txtIn.SelectionStart] + s
+                    + txtIn.Text[(txtIn.SelectionStart + txtIn.SelectionLength)..];
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        //* example for WebView2 as control that displays 'Out' text
+        //                string html = @"
+        //<!DOCTYPE html>
+        //<html>
+        //<head>
+        //  <meta charset='UTF-8'>
+        //  <style>
+        //    body { font-family: 'Segoe UI'; font-size: 21px; color: white; background-color: #1e1e1e; padding: 20px; }
+        //  </style>
+        //<script>
+        //function underlineById(id) {
+        //  document.querySelectorAll('span').forEach(span => {    span.style.textDecoration = 'none';  });
+        //  const el = document.getElementById(id);
+        //  if (el)
+        //    el.style.textDecoration = 'underline';
+        //}
+        //</script>
+        //</head>
+        //<body>
+        //<span id='1'>One</span>
+        //<span id='2'>Two</span>
+        //<span id='3'>Three</span>
+        //  <p>This is a <u>very important</u> sentence.</p>
+        //  <p>Another: <span style='text-decoration: underline;'>highlighted part</span>.</p>
+        //</body>
+        //</html>
+        //";
+        //                await webViewOut.EnsureCoreWebView2Async();
+        //                webViewOut.NavigateToString(html);
+        //try
+        //{
+        //    webViewOut.CoreWebView2?.ExecuteScriptAsync($"underlineById('{numRate.Value}')");
+        //}
+        //catch (Exception ex) { MessageBox.Show(ex.Message); }
     }
 }

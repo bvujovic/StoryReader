@@ -7,22 +7,28 @@ namespace StoryReader.Classes
         public partial class SettingsRow
         {
             public override string ToString()
-                => $"{Name} => {Value}";
+                => $"{Name} => {(IsNull(nameof(Value)) ? "/" : Value)}";
         }
 
         public partial class SettingsDataTable
         {
-            public void SaveSetting(string name, string value)
+            public void SaveSetting(string name, string? value)
             {
-                var s = FindByName(name);
-                if (s == null)
+                var sett = FindByName(name);
+                if (sett == null)
                 {
-                    s = NewSettingsRow();
-                    s.Name = name;
+                    sett = NewSettingsRow();
+                    sett.Name = name;
                 }
-                s.Value = value;
-                if (s.RowState == DataRowState.Detached)
-                    AddSettingsRow(s);
+                if (value != null)
+                {
+                    sett.Value = value;
+                    if (sett.RowState == DataRowState.Detached)
+                        AddSettingsRow(sett);
+                }
+                //? ovo ispod mozda nije neophodno
+                else if (sett.RowState != DataRowState.Detached)
+                    RemoveSettingsRow(sett);
             }
 
             public int ReadInt(string name, int defValue, Func<int, bool>? checkMethod = null)
@@ -47,7 +53,7 @@ namespace StoryReader.Classes
                 return defValue;
             }
 
-            public string ReadString(string name, string defValue)
+            public string? ReadString(string name, string? defValue = null)
             {
                 var s = FindByName(name);
                 if (s != null)

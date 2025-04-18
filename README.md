@@ -6,13 +6,15 @@ Text/story is read by selected voices installed on Windows
 ## TODO
 - [ ] Bug fixes:
 	- [ ] Test&improve search with regular expressions
-- [ ] Code cleanup: remove commented lines of code in FrmMain, Speaker
-- [x] Add context menu with Find Selection: find selected text from rtbOut in txtIn
-- [x] User can enter a number without '%' for Volume or Rate in dgvVoices
+- [x] Improve parsing txtIn.Text: leading space for underlined text...
+- [x] Add code example for WebView2 as control that displays 'Out' text
+- [x] Add Close item in File menu
+- [x] Code cleanup: remove commented lines of code in FrmMain, Speaker
+- [x] When app starts, open last used file/story
 - [ ] Make a list of keypresses: documentation (in code) and/or in user interface
-	- [ ] Keypresses: 4, 5, 6 (on numeric keyboard) for backward, play/pause, forward?
+	- [ ] Keypresses: Ctrl + 4, 5, 6 (on numeric keyboard) for backward, play/pause, forward?
 - [ ] Improve txtOut
-	- [x] Mark currently read sentences (underline)
+	- [ ] Improve reliability of underlining currently read sentences
 	- [ ] User should play sentences by clicking on them; arrow keys: next/prev sentence
 - [ ] Add File/New: New text/story
 - [ ] Add button Validate, on click check:

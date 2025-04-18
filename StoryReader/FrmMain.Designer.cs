@@ -51,6 +51,7 @@
             stripMenu = new MenuStrip();
             tsmiFile = new ToolStripMenuItem();
             tsmiFileOpen = new ToolStripMenuItem();
+            tsmiFileClose = new ToolStripMenuItem();
             tsmiFileSave = new ToolStripMenuItem();
             tsmiFileBrowse = new ToolStripMenuItem();
             editToolStripMenuItem = new ToolStripMenuItem();
@@ -76,6 +77,7 @@
             btnReplace = new StoryReader.Controls.UcButton();
             cmbFind = new ComboBox();
             pnlTop = new Panel();
+            button1 = new Button();
             btnForward = new Button();
             btnBackward = new Button();
             label2 = new Label();
@@ -181,9 +183,8 @@
             lblFileHeader.Margin = new Padding(0);
             lblFileHeader.Name = "lblFileHeader";
             lblFileHeader.Padding = new Padding(2);
-            lblFileHeader.Size = new Size(75, 27);
+            lblFileHeader.Size = new Size(4, 27);
             lblFileHeader.TabIndex = 0;
-            lblFileHeader.Text = "story.txt";
             lblFileHeader.Click += StoryTextHeader_Click;
             // 
             // rtbOut
@@ -315,7 +316,7 @@
             // 
             // tsmiFile
             // 
-            tsmiFile.DropDownItems.AddRange(new ToolStripItem[] { tsmiFileOpen, tsmiFileSave, tsmiFileBrowse });
+            tsmiFile.DropDownItems.AddRange(new ToolStripItem[] { tsmiFileOpen, tsmiFileClose, tsmiFileSave, tsmiFileBrowse });
             tsmiFile.Name = "tsmiFile";
             tsmiFile.Size = new Size(37, 20);
             tsmiFile.Text = "File";
@@ -328,6 +329,13 @@
             tsmiFileOpen.Text = "Open...";
             tsmiFileOpen.ToolTipText = "Open text/story file";
             tsmiFileOpen.Click += TsmiFileOpen_Click;
+            // 
+            // tsmiFileClose
+            // 
+            tsmiFileClose.Name = "tsmiFileClose";
+            tsmiFileClose.Size = new Size(155, 22);
+            tsmiFileClose.Text = "Close";
+            tsmiFileClose.Click += TsmiFileClose_Click;
             // 
             // tsmiFileSave
             // 
@@ -396,7 +404,7 @@
             // 
             tsmiViewTheme.DropDownItems.AddRange(new ToolStripItem[] { tsmiLightMode, tsmiDarkMode });
             tsmiViewTheme.Name = "tsmiViewTheme";
-            tsmiViewTheme.Size = new Size(111, 22);
+            tsmiViewTheme.Size = new Size(110, 22);
             tsmiViewTheme.Text = "Theme";
             // 
             // tsmiLightMode
@@ -548,6 +556,7 @@
             // 
             // pnlTop
             // 
+            pnlTop.Controls.Add(button1);
             pnlTop.Controls.Add(btnForward);
             pnlTop.Controls.Add(btnBackward);
             pnlTop.Controls.Add(numFontSize);
@@ -576,9 +585,20 @@
             pnlTop.Size = new Size(1236, 135);
             pnlTop.TabIndex = 3;
             // 
+            // button1
+            // 
+            button1.Location = new Point(871, 37);
+            button1.Name = "button1";
+            button1.Size = new Size(75, 26);
+            button1.TabIndex = 22;
+            button1.Text = "Del \\r\\n";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += Button1_Click;
+            // 
             // btnForward
             // 
             btnForward.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnForward.FlatStyle = FlatStyle.System;
             btnForward.Font = new Font("Segoe UI", 12F);
             btnForward.Location = new Point(1188, 104);
             btnForward.Name = "btnForward";
@@ -591,6 +611,7 @@
             // btnBackward
             // 
             btnBackward.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnBackward.FlatStyle = FlatStyle.System;
             btnBackward.Font = new Font("Segoe UI", 12F);
             btnBackward.Location = new Point(1149, 104);
             btnBackward.Margin = new Padding(0);
@@ -688,5 +709,7 @@
         private ContextMenuStrip ctxOut;
         private ToolStripMenuItem tsmiOut_FindSelection;
         private Button btnForward;
+        private Button button1;
+        private ToolStripMenuItem tsmiFileClose;
     }
 }

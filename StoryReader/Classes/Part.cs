@@ -17,12 +17,14 @@ namespace StoryReader.Classes
             return TextFs.AddSSMLroot(s);
         }
 
+        private readonly char[] trimChars = [' ', '\t'];
+
         public string ToRtf(List<Voice> voices, Part? current)
         {
             // green \ul background\ulnone  text
             var isCurrent = this != null && this == current;
-            return "\\highlight" + (voices.IndexOf(Voice) + 1) 
-                + (isCurrent ? "{\\ul " : "") + Text + (isCurrent ? "\\ulnone}" : "");
+            return "{\\highlight" + (voices.IndexOf(Voice) + 1) + " "
+                + (isCurrent ? "{\\ul " : "") + Text.Trim(trimChars) + (isCurrent ? "}" : "") + "}";
         }
     }
 }

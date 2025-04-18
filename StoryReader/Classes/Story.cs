@@ -20,6 +20,12 @@
             }
         }
 
+        public bool IsCurrentPartFirst
+            => idxCurrentPart == 0;
+
+        public void SetCurrentPartNull()
+            => idxCurrentPart = -1;
+
         public void AddPart(Part part)
         {
             parts.Add(part);
@@ -66,7 +72,7 @@
         public string ToRtf()
         {
             var voices = parts.Select(it => it.Voice).Distinct().ToList();
-            var colors = voices.Select(it => VoiceColor.AllColors.First(c => c.Name == it.Color).RTF).ToList();
+            var colors = voices.Select(it => VoiceColorHelpers.AllColors.First(c => c.Name == it.Color).RTF).ToList();
             var colorTable = $"{{\\colortbl; {string.Join(" ", colors)}}}";
             if (voices.Count == 0)
                 return string.Empty;
