@@ -40,5 +40,10 @@ namespace StoryReader.Classes
             while (Searches.Count > maxSearches)
                 Searches.RemoveAt(maxSearches);
         }
+
+        public static void Remove(SavedSearch ss)
+        {
+            Searches.Remove(ss);
+        }
     }
 }

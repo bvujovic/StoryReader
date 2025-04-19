@@ -40,7 +40,6 @@ namespace StoryReader
                     cmbVoices.SelectedIndex = 0;
                 IsNewCharOvertype = false;
                 prevTxtInText = txtIn.Text;
-                lblFileHeader.Text = "/";
                 ttRegex.SetToolTip(cmbFind,
 @"\[\d+\] - [1], [2], [3], etc. \d+ → Matches one or more digits (0-9).
 \b means word boundary, so \bfox\b will only match ""fox"" and not ""firefox"".
@@ -50,6 +49,8 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
 
                 ds.ReadXml(dataSetFileName);
                 numFontSize.Value = ds.Settings.ReadInt("FontSize", (int)numFontSize.Value);
+                numRate.Value = ds.Settings.ReadInt("Rate", (int)numRate.Value);
+                numVolume.Value = ds.Settings.ReadInt("Volume", (int)numVolume.Value);
                 WindowState = ds.Settings.ReadBool("Maximized", false)
                     ? FormWindowState.Maximized : FormWindowState.Normal;
                 if (WindowState == FormWindowState.Normal)
@@ -157,15 +158,44 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
 
         private void TimKeyPresses_Tick(object sender, EventArgs e)
         {
+            if ((DateTime.Now - lastTimKeyPress).TotalMilliseconds < 500)
+                return;
             // Ctrl+Shift+Z - Play/Pause
-            if (IsKeyPushedDown(Keys.ControlKey) && IsKeyPushedDown(Keys.ShiftKey) && IsKeyPushedDown(Keys.Z))
+            // if (IsKeyPushedDown(Keys.ControlKey) && IsKeyPushedDown(Keys.ShiftKey) && IsKeyPushedDown(Keys.Z)
+            if (IsKeyPushedDown(Keys.F5))
             {
+                lastTimKeyPress = DateTime.Now;
                 if (speaker.Synth.State == SynthesizerState.Ready)
                     btnSpeak.PerformClick();
                 else
                     btnPauseResume.PerformClick();
             }
+            if (IsKeyPushedDown(Keys.F6))
+            {
+                lastTimKeyPress = DateTime.Now;
+                btnBackward.PerformClick();
+            }
+            if (IsKeyPushedDown(Keys.F7))
+            {
+                lastTimKeyPress = DateTime.Now;
+                btnForward.PerformClick();
+            }
+
+            //* PerformClick() is executed only once per key press - no matter how long press lasts
+            //* private bool keyPushedF6 = false;
+            //
+            //if (IsKeyPushedDown(Keys.F6))
+            //{
+            //    if (!keyPushedF6)
+            //        btnBackward.PerformClick();
+            //    keyPushedF6 = true;
+            //}
+            //else
+            //    keyPushedF6 = false;
         }
+
+
+        private DateTime lastTimKeyPress = DateTime.MinValue;
 
         //private void FrmMain_KeyDown(object sender, KeyEventArgs e)
         //{
@@ -229,7 +259,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 {
                     speaker.Synth.Volume = (int)numVolume.Value;
                     speaker.Synth.Rate = (int)numRate.Value;
-                    speaker.Speak(part.ToSSML());
+                    Speak(part);
                 }
                 DisplayStory();
             }
@@ -258,7 +288,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             var part = story.GetNextPart();
             if (part != null)
             {
-                speaker.Speak(part.ToSSML());
+                Speak(part);
                 rtbOut.BeginInvoke((MethodInvoker)delegate { DisplayStory(); });
             }
             else
@@ -267,6 +297,12 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 story.SetCurrentPartNull();
                 DisplayStory();
             }
+        }
+
+        private void Speak(Part part)
+        {
+            speaker.Speak(part.ToSSML());
+            lastSentenceBack = DateTime.Now;
         }
 
         private DateTime lastSentenceBack = DateTime.MinValue;
@@ -281,9 +317,8 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 if (part != null)
                 {
                     DisplayStory();
-                    speaker.Speak(part.ToSSML());
+                    Speak(part);
                 }
-                lastSentenceBack = DateTime.Now;
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
@@ -300,14 +335,8 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             if (part != null)
             {
                 DisplayStory();
-                speaker.Speak(part.ToSSML());
+                Speak(part);
             }
-        }
-
-        private void RtbOut_SelectionChanged(object sender, EventArgs e)
-        {
-            Debug.WriteLine(rtbOut.SelectionBackColor);
-            Debug.WriteLine(rtbOut.SelectionStart);
         }
 
         private readonly Speaker speaker = new();
@@ -372,11 +401,13 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
         {
             try
             {
-                if (IsFileChanged)
+                if (isFileChanged)
                 {
-                    DisplayFileName();
                     File.WriteAllText(fileName!, txtIn.Text);
                     DisplayStatus("File saved.");
+                    //DisplayFileName();
+                    isFileChanged = false;
+                    DisplayCaption();
                 }
                 else
                     throw new Exception("You have to open a file first.");
@@ -386,22 +417,42 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
 
         private void TxtIn_TextChanged(object sender, EventArgs e)
         {
-            if (fileName != null && !lblFileHeader.Text.EndsWith('*'))
-                lblFileHeader.Text += " *";
+            //if (fileName != null && !lblFileHeader.Text.EndsWith('*'))
+            //    lblFileHeader.Text += " *";
+            if (fileName != null && !isFileChanged)
+            {
+                isFileChanged = true;
+                DisplayCaption();
+            }
         }
 
-        private void DisplayFileName()
+        //private void DisplayFileName()
+        //{
+        //    if (fileName != null)
+        //    {
+        //        var fi = new FileInfo(fileName);
+        //        lblFileHeader.Text = fi.Name;
+        //    }
+        //    else
+        //        lblFileHeader.Text = "";
+        //}
+
+        /// <summary>Display application title/caption: file name (if opened) - application name</summary>
+        private void DisplayCaption()
         {
-            if (fileName != null)
+            if (string.IsNullOrEmpty(fileName))
+                Text = AppName;
+            else
             {
                 var fi = new FileInfo(fileName);
-                lblFileHeader.Text = fi.Name;
+                Text = $"{(isFileChanged ? "*" : "")}{fi.Name} - {AppName}";
             }
-            else
-                lblFileHeader.Text = "";
         }
 
+        private const string AppName = "Story Reader";
         private string? fileName = null;
+        /// <summary>Is the text of a story changed.</summary>
+        private bool isFileChanged = false;
 
         private void TsmiFileOpen_Click(object sender, EventArgs e)
         {
@@ -420,7 +471,8 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             txtIn.Select(0, 0);
             rtbOut.Clear();
             ds.Settings.SaveSetting(nameof(fileName), file);
-            DisplayFileName();
+            isFileChanged = false;
+            DisplayCaption();
             ReadCharVoices();
         }
 
@@ -562,6 +614,12 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 txtReplace.Text = ss.Replace;
             else
                 txtReplace.Text = "";
+        }
+
+        private void TsmiFind_RemoveSearch_Click(object sender, EventArgs e)
+        {
+            if (cmbFind.SelectedItem is SavedSearch ss)
+                SavedSearch.Remove(ss);
         }
 
         private void BtnFindNext_Click(object sender, EventArgs e)
@@ -832,7 +890,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             ApplyTheme(this, theme);
         }
 
-        private HashSet<Control> ExcludedControls => [pnlStoryTextHeader, btnSpeak, btnStop, btnPauseResume];
+        private HashSet<Control> ExcludedControls => [btnSpeak, btnStop, btnPauseResume];
 
         public void ApplyTheme(Control ctrl, AppTheme theme)
         {
@@ -874,13 +932,13 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             dgv.DefaultCellStyle.SelectionForeColor = (theme == AppTheme.Dark) ? Color.White : SystemColors.HighlightText;
         }
 
-        /// <summary>Is the text of a story changed.</summary>
-        private bool IsFileChanged
-            => fileName != null && lblFileHeader.Text.EndsWith('*');
+        ///// <summary>Is the text of a story changed.</summary>
+        //private bool IsFileChanged
+        //    => fileName != null && lblFileHeader.Text.EndsWith('*');
 
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (IsFileChanged)
+            if (isFileChanged)
             {
                 var res = MessageBox.Show("Do you want to save changes to your file?", "?"
                     , MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
@@ -892,6 +950,8 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             if (!e.Cancel)
             {
                 ds.Settings.SaveSetting("FontSize", numFontSize.Value.ToString());
+                ds.Settings.SaveSetting("Rate", numRate.Value.ToString());
+                ds.Settings.SaveSetting("Volume", numVolume.Value.ToString());
                 var maximized = WindowState == FormWindowState.Maximized;
                 ds.Settings.SaveSetting("Maximized", maximized.ToString());
                 if (WindowState == FormWindowState.Normal)
@@ -913,7 +973,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             tsmiOut_FindSelection.Enabled = rtbOut.SelectionLength > 0;
         }
 
-        private void Button1_Click(object sender, EventArgs e)
+        private void TsmiEditRemoveLineBreaks_Click(object sender, EventArgs e)
         {
             try
             {

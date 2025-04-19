@@ -34,8 +34,6 @@
             Label label3;
             scMain = new SplitContainer();
             txtIn = new TextBox();
-            pnlStoryTextHeader = new Panel();
-            lblFileHeader = new Label();
             rtbOut = new RichTextBox();
             ctxOut = new ContextMenuStrip(components);
             tsmiOut_FindSelection = new ToolStripMenuItem();
@@ -55,10 +53,11 @@
             tsmiFileSave = new ToolStripMenuItem();
             tsmiFileBrowse = new ToolStripMenuItem();
             editToolStripMenuItem = new ToolStripMenuItem();
+            tsmiEditUndo = new ToolStripMenuItem();
             tsmiRemoveDuplicateLetters = new ToolStripMenuItem();
             tsmiInsertOvertype = new ToolStripMenuItem();
             tsmiAddSpaceAfterPunctuation = new ToolStripMenuItem();
-            tsmiEditUndo = new ToolStripMenuItem();
+            tsmiEditRemoveLineBreaks = new ToolStripMenuItem();
             viewToolStripMenuItem = new ToolStripMenuItem();
             tsmiViewTheme = new ToolStripMenuItem();
             tsmiLightMode = new ToolStripMenuItem();
@@ -77,9 +76,10 @@
             btnReplace = new StoryReader.Controls.UcButton();
             cmbFind = new ComboBox();
             pnlTop = new Panel();
-            button1 = new Button();
             btnForward = new Button();
             btnBackward = new Button();
+            ctxFind = new ContextMenuStrip(components);
+            tsmiFind_RemoveSearch = new ToolStripMenuItem();
             label2 = new Label();
             label1 = new Label();
             label3 = new Label();
@@ -87,7 +87,6 @@
             scMain.Panel1.SuspendLayout();
             scMain.Panel2.SuspendLayout();
             scMain.SuspendLayout();
-            pnlStoryTextHeader.SuspendLayout();
             ctxOut.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numFontSize).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numVolume).BeginInit();
@@ -96,6 +95,7 @@
             stripMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvVoices).BeginInit();
             pnlTop.SuspendLayout();
+            ctxFind.SuspendLayout();
             SuspendLayout();
             // 
             // label2
@@ -138,7 +138,6 @@
             // scMain.Panel1
             // 
             scMain.Panel1.Controls.Add(txtIn);
-            scMain.Panel1.Controls.Add(pnlStoryTextHeader);
             // 
             // scMain.Panel2
             // 
@@ -151,41 +150,16 @@
             // 
             txtIn.Dock = DockStyle.Fill;
             txtIn.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            txtIn.Location = new Point(0, 27);
+            txtIn.Location = new Point(0, 0);
             txtIn.MaxLength = 100000;
             txtIn.Multiline = true;
             txtIn.Name = "txtIn";
             txtIn.ScrollBars = ScrollBars.Vertical;
-            txtIn.Size = new Size(616, 387);
+            txtIn.Size = new Size(616, 414);
             txtIn.TabIndex = 1;
             txtIn.TextChanged += TxtIn_TextChanged;
             txtIn.KeyDown += TxtIn_KeyDown;
             txtIn.KeyPress += TxtIn_KeyPress;
-            // 
-            // pnlStoryTextHeader
-            // 
-            pnlStoryTextHeader.BackColor = Color.SkyBlue;
-            pnlStoryTextHeader.BorderStyle = BorderStyle.FixedSingle;
-            pnlStoryTextHeader.Controls.Add(lblFileHeader);
-            pnlStoryTextHeader.Dock = DockStyle.Top;
-            pnlStoryTextHeader.Location = new Point(0, 0);
-            pnlStoryTextHeader.Name = "pnlStoryTextHeader";
-            pnlStoryTextHeader.Size = new Size(616, 27);
-            pnlStoryTextHeader.TabIndex = 2;
-            pnlStoryTextHeader.Click += StoryTextHeader_Click;
-            // 
-            // lblFileHeader
-            // 
-            lblFileHeader.AutoSize = true;
-            lblFileHeader.Dock = DockStyle.Left;
-            lblFileHeader.Font = new Font("Segoe UI", 12.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblFileHeader.Location = new Point(0, 0);
-            lblFileHeader.Margin = new Padding(0);
-            lblFileHeader.Name = "lblFileHeader";
-            lblFileHeader.Padding = new Padding(2);
-            lblFileHeader.Size = new Size(4, 27);
-            lblFileHeader.TabIndex = 0;
-            lblFileHeader.Click += StoryTextHeader_Click;
             // 
             // rtbOut
             // 
@@ -355,10 +329,18 @@
             // 
             // editToolStripMenuItem
             // 
-            editToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { tsmiRemoveDuplicateLetters, tsmiInsertOvertype, tsmiAddSpaceAfterPunctuation, tsmiEditUndo });
+            editToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { tsmiEditUndo, tsmiRemoveDuplicateLetters, tsmiInsertOvertype, tsmiAddSpaceAfterPunctuation, tsmiEditRemoveLineBreaks });
             editToolStripMenuItem.Name = "editToolStripMenuItem";
             editToolStripMenuItem.Size = new Size(39, 20);
             editToolStripMenuItem.Text = "Edit";
+            // 
+            // tsmiEditUndo
+            // 
+            tsmiEditUndo.Name = "tsmiEditUndo";
+            tsmiEditUndo.ShortcutKeys = Keys.Control | Keys.Z;
+            tsmiEditUndo.Size = new Size(265, 22);
+            tsmiEditUndo.Text = "Undo";
+            tsmiEditUndo.Click += TsmiEditUndo_Click;
             // 
             // tsmiRemoveDuplicateLetters
             // 
@@ -385,13 +367,12 @@
             tsmiAddSpaceAfterPunctuation.Text = "Add space after punctuation";
             tsmiAddSpaceAfterPunctuation.Click += TsmiAddSpaceAfterPunctuation_Click;
             // 
-            // tsmiEditUndo
+            // tsmiEditRemoveLineBreaks
             // 
-            tsmiEditUndo.Name = "tsmiEditUndo";
-            tsmiEditUndo.ShortcutKeys = Keys.Control | Keys.Z;
-            tsmiEditUndo.Size = new Size(265, 22);
-            tsmiEditUndo.Text = "Undo";
-            tsmiEditUndo.Click += TsmiEditUndo_Click;
+            tsmiEditRemoveLineBreaks.Name = "tsmiEditRemoveLineBreaks";
+            tsmiEditRemoveLineBreaks.Size = new Size(265, 22);
+            tsmiEditRemoveLineBreaks.Text = "Remove line breaks mid-sentence";
+            tsmiEditRemoveLineBreaks.Click += TsmiEditRemoveLineBreaks_Click;
             // 
             // viewToolStripMenuItem
             // 
@@ -519,6 +500,7 @@
             // 
             // btnFindNext
             // 
+            btnFindNext.ContextMenuStrip = ctxFind;
             btnFindNext.FlatStyle = FlatStyle.System;
             btnFindNext.Font = new Font("Segoe UI", 12F);
             btnFindNext.Location = new Point(995, 69);
@@ -545,6 +527,7 @@
             // 
             // cmbFind
             // 
+            cmbFind.ContextMenuStrip = ctxFind;
             cmbFind.FormattingEnabled = true;
             cmbFind.Location = new Point(871, 69);
             cmbFind.Name = "cmbFind";
@@ -556,7 +539,6 @@
             // 
             // pnlTop
             // 
-            pnlTop.Controls.Add(button1);
             pnlTop.Controls.Add(btnForward);
             pnlTop.Controls.Add(btnBackward);
             pnlTop.Controls.Add(numFontSize);
@@ -585,16 +567,6 @@
             pnlTop.Size = new Size(1236, 135);
             pnlTop.TabIndex = 3;
             // 
-            // button1
-            // 
-            button1.Location = new Point(871, 37);
-            button1.Name = "button1";
-            button1.Size = new Size(75, 26);
-            button1.TabIndex = 22;
-            button1.Text = "Del \\r\\n";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += Button1_Click;
-            // 
             // btnForward
             // 
             btnForward.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
@@ -622,6 +594,19 @@
             btnBackward.UseVisualStyleBackColor = true;
             btnBackward.Click += BtnBackward_Click;
             // 
+            // ctxFind
+            // 
+            ctxFind.Items.AddRange(new ToolStripItem[] { tsmiFind_RemoveSearch });
+            ctxFind.Name = "ctxOut";
+            ctxFind.Size = new Size(181, 48);
+            // 
+            // tsmiFind_RemoveSearch
+            // 
+            tsmiFind_RemoveSearch.Name = "tsmiFind_RemoveSearch";
+            tsmiFind_RemoveSearch.Size = new Size(180, 22);
+            tsmiFind_RemoveSearch.Text = "Remove search";
+            tsmiFind_RemoveSearch.Click += TsmiFind_RemoveSearch_Click;
+            // 
             // FrmMain
             // 
             AutoScaleMode = AutoScaleMode.None;
@@ -642,8 +627,6 @@
             scMain.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)scMain).EndInit();
             scMain.ResumeLayout(false);
-            pnlStoryTextHeader.ResumeLayout(false);
-            pnlStoryTextHeader.PerformLayout();
             ctxOut.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)numFontSize).EndInit();
             ((System.ComponentModel.ISupportInitialize)numVolume).EndInit();
@@ -655,6 +638,7 @@
             ((System.ComponentModel.ISupportInitialize)dgvVoices).EndInit();
             pnlTop.ResumeLayout(false);
             pnlTop.PerformLayout();
+            ctxFind.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -662,7 +646,6 @@
         #endregion
 
         private SplitContainer scMain;
-        private TextBox txtIn;
         private NumericUpDown numVolume;
         private Label label2;
         private NumericUpDown numRate;
@@ -685,8 +668,6 @@
         private ToolStripMenuItem tsmiFileBrowse;
         private NumericUpDown numFontSize;
         private ToolStripMenuItem tsmiEditUndo;
-        private Panel pnlStoryTextHeader;
-        private Label lblFileHeader;
         private ToolTip ttRegex;
         private System.Windows.Forms.Timer timKeyPresses;
         private ToolStripMenuItem viewToolStripMenuItem;
@@ -709,7 +690,10 @@
         private ContextMenuStrip ctxOut;
         private ToolStripMenuItem tsmiOut_FindSelection;
         private Button btnForward;
-        private Button button1;
         private ToolStripMenuItem tsmiFileClose;
+        private ToolStripMenuItem tsmiEditRemoveLineBreaks;
+        private TextBox txtIn;
+        private ContextMenuStrip ctxFind;
+        private ToolStripMenuItem tsmiFind_RemoveSearch;
     }
 }
