@@ -73,13 +73,14 @@
             lblSearchResults = new Label();
             txtReplace = new TextBox();
             btnFindNext = new StoryReader.Controls.UcButton();
+            ctxFind = new ContextMenuStrip(components);
+            tsmiFind_RemoveSearch = new ToolStripMenuItem();
             btnReplace = new StoryReader.Controls.UcButton();
             cmbFind = new ComboBox();
             pnlTop = new Panel();
+            btnMp3 = new StoryReader.Controls.UcButton();
             btnForward = new Button();
             btnBackward = new Button();
-            ctxFind = new ContextMenuStrip(components);
-            tsmiFind_RemoveSearch = new ToolStripMenuItem();
             label2 = new Label();
             label1 = new Label();
             label3 = new Label();
@@ -94,8 +95,8 @@
             stripStatus.SuspendLayout();
             stripMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvVoices).BeginInit();
-            pnlTop.SuspendLayout();
             ctxFind.SuspendLayout();
+            pnlTop.SuspendLayout();
             SuspendLayout();
             // 
             // label2
@@ -262,7 +263,6 @@
             // 
             ofd.AddToRecent = false;
             ofd.Filter = "Test files|*.txt|Html files|*.htm*|All files|*.*";
-            ofd.InitialDirectory = "c:\\Users\\bvnet\\OneDrive\\Citanje\\_Wcf, Wpf, SOA\\cepri\\_StoryReader\\";
             // 
             // stripStatus
             // 
@@ -385,7 +385,7 @@
             // 
             tsmiViewTheme.DropDownItems.AddRange(new ToolStripItem[] { tsmiLightMode, tsmiDarkMode });
             tsmiViewTheme.Name = "tsmiViewTheme";
-            tsmiViewTheme.Size = new Size(110, 22);
+            tsmiViewTheme.Size = new Size(111, 22);
             tsmiViewTheme.Text = "Theme";
             // 
             // tsmiLightMode
@@ -512,6 +512,19 @@
             btnFindNext.UseVisualStyleBackColor = true;
             btnFindNext.Click += BtnFindNext_Click;
             // 
+            // ctxFind
+            // 
+            ctxFind.Items.AddRange(new ToolStripItem[] { tsmiFind_RemoveSearch });
+            ctxFind.Name = "ctxOut";
+            ctxFind.Size = new Size(155, 26);
+            // 
+            // tsmiFind_RemoveSearch
+            // 
+            tsmiFind_RemoveSearch.Name = "tsmiFind_RemoveSearch";
+            tsmiFind_RemoveSearch.Size = new Size(154, 22);
+            tsmiFind_RemoveSearch.Text = "Remove search";
+            tsmiFind_RemoveSearch.Click += TsmiFind_RemoveSearch_Click;
+            // 
             // btnReplace
             // 
             btnReplace.FlatStyle = FlatStyle.System;
@@ -539,6 +552,7 @@
             // 
             // pnlTop
             // 
+            pnlTop.Controls.Add(btnMp3);
             pnlTop.Controls.Add(btnForward);
             pnlTop.Controls.Add(btnBackward);
             pnlTop.Controls.Add(numFontSize);
@@ -567,6 +581,17 @@
             pnlTop.Size = new Size(1236, 135);
             pnlTop.TabIndex = 3;
             // 
+            // btnMp3
+            // 
+            btnMp3.Location = new Point(771, 36);
+            btnMp3.Name = "btnMp3";
+            btnMp3.Size = new Size(85, 28);
+            btnMp3.TabIndex = 22;
+            btnMp3.Text = "mp3";
+            btnMp3.ToolTipText = "Adds data about characters and voices at the top of an oppened text file";
+            btnMp3.UseVisualStyleBackColor = true;
+            btnMp3.Click += BtnMp3_Click;
+            // 
             // btnForward
             // 
             btnForward.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
@@ -593,19 +618,6 @@
             btnBackward.Text = "⏪";
             btnBackward.UseVisualStyleBackColor = true;
             btnBackward.Click += BtnBackward_Click;
-            // 
-            // ctxFind
-            // 
-            ctxFind.Items.AddRange(new ToolStripItem[] { tsmiFind_RemoveSearch });
-            ctxFind.Name = "ctxOut";
-            ctxFind.Size = new Size(181, 48);
-            // 
-            // tsmiFind_RemoveSearch
-            // 
-            tsmiFind_RemoveSearch.Name = "tsmiFind_RemoveSearch";
-            tsmiFind_RemoveSearch.Size = new Size(180, 22);
-            tsmiFind_RemoveSearch.Text = "Remove search";
-            tsmiFind_RemoveSearch.Click += TsmiFind_RemoveSearch_Click;
             // 
             // FrmMain
             // 
@@ -636,9 +648,9 @@
             stripMenu.ResumeLayout(false);
             stripMenu.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dgvVoices).EndInit();
+            ctxFind.ResumeLayout(false);
             pnlTop.ResumeLayout(false);
             pnlTop.PerformLayout();
-            ctxFind.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -695,5 +707,6 @@
         private TextBox txtIn;
         private ContextMenuStrip ctxFind;
         private ToolStripMenuItem tsmiFind_RemoveSearch;
+        private Controls.UcButton btnMp3;
     }
 }

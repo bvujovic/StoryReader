@@ -1,10 +1,12 @@
-﻿using StoryReader.Classes;
+﻿using NAudio.Wave;
+using StoryReader.Classes;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Speech.Synthesis;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace StoryReader
@@ -34,10 +36,15 @@ namespace StoryReader
                 dgvVoices.Columns.Insert(2, CreateDropDownColumn("Color"));
 
                 cmbVoices.Items.Clear();
+                // Voices installed on system: Settings / Time&language / Speech / Voices
                 foreach (var v in speaker.Synth.GetInstalledVoices())
                     cmbVoices.Items.Add(v.VoiceInfo.Name);
+                // Azure voices
+                foreach (var v in VoiceHelpers.AzureVoices)
+                    cmbVoices.Items.Add(v);
                 if (cmbVoices.Items.Count > 0)
                     cmbVoices.SelectedIndex = 0;
+
                 IsNewCharOvertype = false;
                 prevTxtInText = txtIn.Text;
                 ttRegex.SetToolTip(cmbFind,
@@ -68,6 +75,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 else
                     if (theme == AppTheme.Dark)
                     tsmiDarkMode.PerformClick();
+                ofd.InitialDirectory = GetStoriesFolderName();
                 fileName = ds.Settings.ReadString(nameof(fileName));
                 LoadFile(fileName);
                 SavedSearch.Searches = JsonSerializer.Deserialize<BindingList<SavedSearch>>(json)!;
@@ -237,7 +245,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
 
         private readonly Story story = new();
 
-        private void BtnSpeak_Click(object sender, EventArgs e)
+        private async void BtnSpeak_Click(object sender, EventArgs e)
         {
             try
             {
@@ -259,7 +267,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 {
                     speaker.Synth.Volume = (int)numVolume.Value;
                     speaker.Synth.Rate = (int)numRate.Value;
-                    Speak(part);
+                    await Speak(part);
                 }
                 DisplayStory();
             }
@@ -281,14 +289,14 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             }
         }
 
-        private void Synth_SpeakCompleted(object? sender, SpeakCompletedEventArgs e)
+        private async void Synth_SpeakCompleted(object? sender, SpeakCompletedEventArgs e)
         {
             if (e.Cancelled)
                 return;
             var part = story.GetNextPart();
             if (part != null)
             {
-                Speak(part);
+                await Speak(part);
                 rtbOut.BeginInvoke((MethodInvoker)delegate { DisplayStory(); });
             }
             else
@@ -299,15 +307,38 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             }
         }
 
-        private void Speak(Part part)
+        private readonly Player player = new();
+
+        private async Task Speak(Part part)
         {
-            speaker.Speak(part.ToSSML());
-            lastSentenceBack = DateTime.Now;
+            try
+            {
+                //if (VoiceHelpers.IsAzureVoice(part.Voice.VoiceName))
+                //{
+                //    if (waveOutDevice == null)
+                //    {
+                //        var mp3FilePath = AzureSounds.GetFile(part);
+                //        mp3FilePath ??= await AzureSounds.CreateFile(part);
+                //        waveOutDevice = new WaveOutEvent();
+                //        waveOutDevice.PlaybackStopped += OnPlaybackStopped;
+                //        //var mp3FilePath = "c:\\Users\\sosos\\Music\\Hurricane - Favorito.mp3";
+                //        audioFileReader = new AudioFileReader(mp3FilePath);
+                //        waveOutDevice.Init(audioFileReader);
+                //    }
+                //    waveOutDevice.Volume = (int)numVolume.Value / 100.0f;
+                //    waveOutDevice.Play(); // Start or resume playback
+                //}
+                //else
+                //    speaker.Speak(part.ToSSML());
+                await player.Play(part, (int)numVolume.Value, (int)numRate.Value);
+                lastSentenceBack = DateTime.Now;
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
         private DateTime lastSentenceBack = DateTime.MinValue;
 
-        private void BtnBackward_Click(object sender, EventArgs e)
+        private async void BtnBackward_Click(object sender, EventArgs e)
         {
             try
             {
@@ -317,13 +348,13 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 if (part != null)
                 {
                     DisplayStory();
-                    Speak(part);
+                    await Speak(part);
                 }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
-        private void BtnForward_Click(object sender, EventArgs e)
+        private async void BtnForward_Click(object sender, EventArgs e)
         {
             //rtbOut.Rtf = @"{\rtf1\ansi{\colortbl;\red255\green255\blue255;\red255\green0\blue0;\red0\green255\blue0;\red0\green0\blue255;}
             //This is \highlight1 red background text.\par
@@ -335,7 +366,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             if (part != null)
             {
                 DisplayStory();
-                Speak(part);
+                await Speak(part);
             }
         }
 
@@ -1005,6 +1036,42 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
+        private WaveOutEvent? waveOutDevice;
+        private AudioFileReader? audioFileReader;
+
+        private void BtnMp3_Click(object sender, EventArgs e)
+        {
+            //try
+            //{
+            //    if (waveOutDevice == null)
+            //    {
+            //        waveOutDevice = new WaveOutEvent();
+            //        waveOutDevice.PlaybackStopped += OnPlaybackStopped; 
+            //        var mp3FilePath = "c:\\Users\\sosos\\Music\\Hurricane - Favorito.mp3";
+            //        audioFileReader = new AudioFileReader(mp3FilePath);
+            //        waveOutDevice.Init(audioFileReader);
+            //    }
+            //    waveOutDevice.Play(); // Start or resume playback
+            //}
+            //catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        //private void OnPlaybackStopped(object? sender, StoppedEventArgs e)
+        //{
+        //    if (audioFileReader != null)
+        //    {
+        //        audioFileReader.Dispose();
+        //        audioFileReader = null;
+        //    }
+        //    if (waveOutDevice != null)
+        //    {
+        //        waveOutDevice.Dispose();
+        //        waveOutDevice = null;
+        //    }
+        //    if (e.Exception != null)
+        //        MessageBox.Show($"Playback error: {e.Exception.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //}
+
         //* example for WebView2 as control that displays 'Out' text
         //                string html = @"
         //<!DOCTYPE html>
@@ -1039,5 +1106,18 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
         //    webViewOut.CoreWebView2?.ExecuteScriptAsync($"underlineById('{numRate.Value}')");
         //}
         //catch (Exception ex) { MessageBox.Show(ex.Message); }
+
+        private static readonly string[] storiesFolders = [
+            "c:\\Users\\bvnet\\OneDrive\\Citanje\\_Wcf, Wpf, SOA\\cepri\\_StoryReader\\",
+            "C:\\Users\\sosos\\Documents\\Stories"
+            ];
+
+        public static string? GetStoriesFolderName()
+        {
+            foreach (var storyFolder in storiesFolders)
+                if (Directory.Exists(storyFolder))
+                    return storyFolder;
+            return null;
+        }
     }
 }
