@@ -8,6 +8,11 @@ namespace StoryReader.Classes
         public static string[] PitchConstants = ["x-low", "low", "medium", "high", "x-high"];
         public static string[] VolumeConstants = ["silent", "x-low", "low", "medium", "loud", "x-loud"];
 
+        public static string DefaultPitch => PitchConstants[2];
+
+        public static string GetPitch(string? pitch)
+            => string.IsNullOrEmpty(pitch) ? DefaultPitch : pitch;
+
         public static string[] Constants(string property)
         {
             return property switch
@@ -30,5 +35,11 @@ namespace StoryReader.Classes
             else
                 return false; // only constants work for the Pitch
         }
+
+        public static string[] AzureVoices = ["bs-BA-VesnaNeural"];
+
+        public static bool IsAzureVoice(string s)
+            => AzureVoices.Contains(s);
+
     }
 }

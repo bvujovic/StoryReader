@@ -69,7 +69,8 @@
         {
             var vol = string.IsNullOrEmpty(v.Volume) ? "medium" : v.Volume;
             var rate = string.IsNullOrEmpty(v.Rate) ? "medium" : v.Rate;
-            var pitch = string.IsNullOrEmpty(v.Pitch) ? "medium" : v.Pitch;
+            //var pitch = string.IsNullOrEmpty(v.Pitch) ? VoiceHelpers.DefaultPitch : v.Pitch;
+            var pitch = VoiceHelpers.GetPitch(v.Pitch);
             var prosody = $"<prosody volume='{vol}' rate='{rate}' pitch='{pitch}'>";
             return $"<voice name=\"{v.VoiceName}\">{prosody}{part}</prosody></voice>";
         }
