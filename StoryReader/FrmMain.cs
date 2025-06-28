@@ -1,5 +1,6 @@
 ﻿using NAudio.Wave;
 using StoryReader.Classes;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -35,16 +36,6 @@ namespace StoryReader
                 dgvVoices.Columns.RemoveAt(2);
                 dgvVoices.Columns.Insert(2, CreateDropDownColumn("Color"));
 
-                cmbVoices.Items.Clear();
-                // Voices installed on system: Settings / Time&language / Speech / Voices
-                foreach (var v in speaker.Synth.GetInstalledVoices())
-                    cmbVoices.Items.Add(v.VoiceInfo.Name);
-                // Azure voices
-                foreach (var v in VoiceHelpers.AzureVoices)
-                    cmbVoices.Items.Add(v);
-                if (cmbVoices.Items.Count > 0)
-                    cmbVoices.SelectedIndex = 0;
-
                 IsNewCharOvertype = false;
                 prevTxtInText = txtIn.Text;
                 ttRegex.SetToolTip(cmbFind,
@@ -54,6 +45,7 @@ namespace StoryReader
 dog$	\tMatches ""dog"" only if it is at the end of the text
 fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
 
+                Utils.CalcIdxFolder();
                 ds.ReadXml(dataSetFileName);
                 numFontSize.Value = ds.Settings.ReadInt("FontSize", (int)numFontSize.Value);
                 numRate.Value = ds.Settings.ReadInt("Rate", (int)numRate.Value);
@@ -68,14 +60,18 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                     Width = ds.Settings.ReadInt(nameof(Width), Width, it => it > 100 && it <= screen.Width);
                     Height = ds.Settings.ReadInt(nameof(Height), Height, it => it > 100 && it <= screen.Height);
                 }
-                var json = ds.Settings.ReadString(nameof(SavedSearch.Searches), "[]");
+                var json = ds.Settings.ReadString(nameof(SavedSearch.Searches), "[]")!;
                 var theme = (AppTheme)ds.Settings.ReadInt(nameof(AppTheme), 0);
                 if (theme == AppTheme.Light)
                     tsmiLightMode.PerformClick();
                 else
                     if (theme == AppTheme.Dark)
                     tsmiDarkMode.PerformClick();
-                ofd.InitialDirectory = GetStoriesFolderName();
+                var strVoices = ds.Settings.ReadString(nameof(AzureSounds.AzureVoices), string.Empty)!;
+                AzureSounds.AzureVoices = strVoices.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+                LoadAllVoices();
+
+                ofd.InitialDirectory = Utils.GetStoriesFolderName();
                 fileName = ds.Settings.ReadString(nameof(fileName));
                 LoadFile(fileName);
                 SavedSearch.Searches = JsonSerializer.Deserialize<BindingList<SavedSearch>>(json)!;
@@ -83,11 +79,26 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 cmbFind.DisplayMember = nameof(SavedSearch.Find);
                 cmbFind.SelectedIndex = -1;
                 SavedSearch.Enabled = true;
-                speaker.Synth.SpeakCompleted += Synth_SpeakCompleted;
+                //speaker.Synth.SpeakCompleted += Synth_SpeakCompleted;
+                player.Init();
+                player.Stopped += Player_Stopped;
                 timKeyPresses.Start();
                 isFormLoading = false;
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private void LoadAllVoices()
+        {
+            cmbVoices.Items.Clear();
+            // Voices installed on system: Settings / Time&language / Speech / Voices
+            foreach (var v in player.GetInstalledVoices())
+                cmbVoices.Items.Add(v.VoiceInfo.Name);
+            // Azure voices
+            foreach (var v in AzureSounds.AzureVoices!)
+                cmbVoices.Items.Add(v);
+            if (cmbVoices.Items.Count > 0)
+                cmbVoices.SelectedIndex = 0;
         }
 
         private bool isFormLoading = true;
@@ -173,7 +184,8 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             if (IsKeyPushedDown(Keys.F5))
             {
                 lastTimKeyPress = DateTime.Now;
-                if (speaker.Synth.State == SynthesizerState.Ready)
+                //if (speaker.Synth.State == SynthesizerState.Ready)
+                if (player.State == PlayerState.Ready)
                     btnSpeak.PerformClick();
                 else
                     btnPauseResume.PerformClick();
@@ -265,8 +277,8 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 var part = story.GetNextPart();
                 if (part != null)
                 {
-                    speaker.Synth.Volume = (int)numVolume.Value;
-                    speaker.Synth.Rate = (int)numRate.Value;
+                    player.Volume = (int)numVolume.Value;
+                    player.Rate = (int)numRate.Value;
                     await Speak(part);
                 }
                 DisplayStory();
@@ -289,9 +301,9 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             }
         }
 
-        private async void Synth_SpeakCompleted(object? sender, SpeakCompletedEventArgs e)
+        private async void Player_Stopped(object? sender, EventArgs e)
         {
-            if (e.Cancelled)
+            if (player.StoppedByUser)
                 return;
             var part = story.GetNextPart();
             if (part != null)
@@ -301,7 +313,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             }
             else
             {
-                speaker.Stop();
+                player.Stop();
                 story.SetCurrentPartNull();
                 DisplayStory();
             }
@@ -313,23 +325,6 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
         {
             try
             {
-                //if (VoiceHelpers.IsAzureVoice(part.Voice.VoiceName))
-                //{
-                //    if (waveOutDevice == null)
-                //    {
-                //        var mp3FilePath = AzureSounds.GetFile(part);
-                //        mp3FilePath ??= await AzureSounds.CreateFile(part);
-                //        waveOutDevice = new WaveOutEvent();
-                //        waveOutDevice.PlaybackStopped += OnPlaybackStopped;
-                //        //var mp3FilePath = "c:\\Users\\sosos\\Music\\Hurricane - Favorito.mp3";
-                //        audioFileReader = new AudioFileReader(mp3FilePath);
-                //        waveOutDevice.Init(audioFileReader);
-                //    }
-                //    waveOutDevice.Volume = (int)numVolume.Value / 100.0f;
-                //    waveOutDevice.Play(); // Start or resume playback
-                //}
-                //else
-                //    speaker.Speak(part.ToSSML());
                 await player.Play(part, (int)numVolume.Value, (int)numRate.Value);
                 lastSentenceBack = DateTime.Now;
             }
@@ -342,7 +337,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
         {
             try
             {
-                speaker.Stop();
+                player.Stop();
                 var part = ((DateTime.Now - lastSentenceBack).TotalSeconds < 2)
                     ? story.GetPrevPart() : story.CurrentPart;
                 if (part != null)
@@ -361,7 +356,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             //This is \highlight2 green \ul background\ulnone  text.\par
             //This is \highlight3 blue background text.\par}";
 
-            speaker.Stop();
+            player.Stop();
             var part = story.GetNextPart();
             if (part != null)
             {
@@ -370,16 +365,17 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             }
         }
 
-        private readonly Speaker speaker = new();
+        //private readonly Speaker speaker = new();
 
         private void BtnStop_Click(object sender, EventArgs e)
         {
             try
             {
-                speaker.Stop();
+                player.Stop();
                 story.SetCurrentPartNull();
                 DisplayStory();
-                if (speaker.Synth.State == SynthesizerState.Paused)
+                //if (speaker.Synth.State == SynthesizerState.Paused)
+                if (player.State == PlayerState.Paused)
                     btnPauseResume.PerformClick();
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
@@ -609,22 +605,29 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
 
         private void BtnPauseResume_Click(object sender, EventArgs e)
         {
-            var s = speaker.Synth;
-            var paused = s.State == SynthesizerState.Paused;
+            //var s = speaker.Synth;
+            //var paused = s.State == SynthesizerState.Paused;
+            var paused = player.State == PlayerState.Paused;
             btnPauseResume.Text = paused ? "Pause" : "Play";
             btnPauseResume.BackColor = paused ? ThemeColors.LightBackColor : Color.LightBlue;
             btnPauseResume.ForeColor = ThemeColors.LightForeColor;
             if (paused)
-                s.Resume();
+                player.Resume();
             else
-                s.Pause();
+                player.Pause();
+            //if (paused)
+            //    s.Resume();
+            //else
+            //    s.Pause();
         }
 
         private void NumRate_ValueChanged(object sender, EventArgs e)
-            => speaker.Synth.Rate = (int)numRate.Value;
+            //=> speaker.Synth.Rate = (int)numRate.Value;
+            => player.Rate = (int)numRate.Value;
 
         private void NumVolume_ValueChanged(object sender, EventArgs e)
-            => speaker.Synth.Volume = (int)numVolume.Value;
+            //=> speaker.Synth.Volume = (int)numVolume.Value;
+            => player.Volume = (int)numVolume.Value;
 
         private void StoryTextHeader_Click(object sender, EventArgs e)
             => txtIn.Select();
@@ -995,6 +998,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 var theme = tsmiLightMode.Checked ? AppTheme.Light : AppTheme.Dark;
                 ds.Settings.SaveSetting(nameof(AppTheme), ((int)theme).ToString());
                 ds.Settings.SaveSetting(nameof(SavedSearch.Searches), JsonSerializer.Serialize(SavedSearch.Searches));
+                ds.Settings.SaveSetting(nameof(AzureSounds.AzureVoices), string.Join(Environment.NewLine, AzureSounds.AzureVoices));
                 ds.WriteXml(dataSetFileName);
             }
         }
@@ -1036,8 +1040,8 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
-        private WaveOutEvent? waveOutDevice;
-        private AudioFileReader? audioFileReader;
+        //private WaveOutEvent? waveOutDevice;
+        //private AudioFileReader? audioFileReader;
 
         private void BtnMp3_Click(object sender, EventArgs e)
         {
@@ -1054,6 +1058,23 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             //    waveOutDevice.Play(); // Start or resume playback
             //}
             //catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private void TsmiVoicesAzureVoices_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var frm = new FrmAzureVoices
+                {
+                    Voices = string.Join(Environment.NewLine, AzureSounds.AzureVoices!)
+                };
+                if (frm.ShowDialog() == DialogResult.OK)
+                {
+                    AzureSounds.AzureVoices = frm.Voices.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+                    LoadAllVoices();
+                }
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
         //private void OnPlaybackStopped(object? sender, StoppedEventArgs e)
@@ -1107,17 +1128,5 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
         //}
         //catch (Exception ex) { MessageBox.Show(ex.Message); }
 
-        private static readonly string[] storiesFolders = [
-            "c:\\Users\\bvnet\\OneDrive\\Citanje\\_Wcf, Wpf, SOA\\cepri\\_StoryReader\\",
-            "C:\\Users\\sosos\\Documents\\Stories"
-            ];
-
-        public static string? GetStoriesFolderName()
-        {
-            foreach (var storyFolder in storiesFolders)
-                if (Directory.Exists(storyFolder))
-                    return storyFolder;
-            return null;
-        }
     }
 }

@@ -4,22 +4,16 @@ Text/story is read by selected voices installed on Windows
 ![Story Reader - Main Window](ScreenShots/FrmMain.png)
 
 ## TODO
-- [x] Move "Del \r\n" functionality from button to Edit menu item; remove button
-- [x] Move file/story name from label to caption of the form; remove blue ribbon
-- [x] Fix bad logic for using lastSentenceBack (FrmMain)
-- [x] Add ctx menu for cmbFind with Remove item: remove saved search
-- [x] Besides font size, remember rate and volume
-- [x] Add new screenshot(s)
+- [ ] Add an option: F5, F6, F7 can be caught on 1-active, 2-[in]active window
 - [ ] Fix reading chapter names like 1.2 (dot is not the end of sentence)
 - [ ] Add player for background sounds: mp3, remember folder with sounds, option: playing after Stop/Pause reading
 - [ ] Remove leading spaces in paragraphs (rtbOut)
 - [ ] Fix bugs regarding underlining: 2nd sentence is not underlined
-- [ ] Bug fix: search initially jumps over first occurence
+- [ ] Bug fix: search sometimes initially jumps over first occurence
 - [ ] Make a list of keypresses: documentation (in code) and/or in user interface
-	- [x] Keypresses: F5, F6, F7 for play/pause, backward, forward
-- [ ] Improve txtOut
+- [ ] Improve rtbOut
 	- [ ] Improve reliability of underlining currently read sentences
-	- [ ] User should play sentences by clicking on them
+	- [ ] [User should play sentences by clicking on them]
 - [ ] Add File/New: New text/story
 - [ ] Add button Validate, on click check:
 	- [ ] do all characters in a story have a voice name, 

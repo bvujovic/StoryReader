@@ -81,6 +81,8 @@
             btnMp3 = new StoryReader.Controls.UcButton();
             btnForward = new Button();
             btnBackward = new Button();
+            tsmiVoices = new ToolStripMenuItem();
+            tsmiVoicesAzureVoices = new ToolStripMenuItem();
             label2 = new Label();
             label1 = new Label();
             label3 = new Label();
@@ -281,7 +283,7 @@
             // 
             // stripMenu
             // 
-            stripMenu.Items.AddRange(new ToolStripItem[] { tsmiFile, editToolStripMenuItem, viewToolStripMenuItem });
+            stripMenu.Items.AddRange(new ToolStripItem[] { tsmiFile, editToolStripMenuItem, viewToolStripMenuItem, tsmiVoices });
             stripMenu.Location = new Point(0, 0);
             stripMenu.Name = "stripMenu";
             stripMenu.Size = new Size(1236, 24);
@@ -385,7 +387,7 @@
             // 
             tsmiViewTheme.DropDownItems.AddRange(new ToolStripItem[] { tsmiLightMode, tsmiDarkMode });
             tsmiViewTheme.Name = "tsmiViewTheme";
-            tsmiViewTheme.Size = new Size(111, 22);
+            tsmiViewTheme.Size = new Size(180, 22);
             tsmiViewTheme.Text = "Theme";
             // 
             // tsmiLightMode
@@ -619,6 +621,20 @@
             btnBackward.UseVisualStyleBackColor = true;
             btnBackward.Click += BtnBackward_Click;
             // 
+            // tsmiVoices
+            // 
+            tsmiVoices.DropDownItems.AddRange(new ToolStripItem[] { tsmiVoicesAzureVoices });
+            tsmiVoices.Name = "tsmiVoices";
+            tsmiVoices.Size = new Size(52, 20);
+            tsmiVoices.Text = "Voices";
+            // 
+            // tsmiVoicesAzureVoices
+            // 
+            tsmiVoicesAzureVoices.Name = "tsmiVoicesAzureVoices";
+            tsmiVoicesAzureVoices.Size = new Size(180, 22);
+            tsmiVoicesAzureVoices.Text = "Azure Voices...";
+            tsmiVoicesAzureVoices.Click += TsmiVoicesAzureVoices_Click;
+            // 
             // FrmMain
             // 
             AutoScaleMode = AutoScaleMode.None;
@@ -708,5 +724,7 @@
         private ContextMenuStrip ctxFind;
         private ToolStripMenuItem tsmiFind_RemoveSearch;
         private Controls.UcButton btnMp3;
+        private ToolStripMenuItem tsmiVoices;
+        private ToolStripMenuItem tsmiVoicesAzureVoices;
     }
 }

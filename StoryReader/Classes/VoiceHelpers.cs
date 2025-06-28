@@ -35,11 +35,5 @@ namespace StoryReader.Classes
             else
                 return false; // only constants work for the Pitch
         }
-
-        public static string[] AzureVoices = ["bs-BA-VesnaNeural"];
-
-        public static bool IsAzureVoice(string s)
-            => AzureVoices.Contains(s);
-
     }
 }
