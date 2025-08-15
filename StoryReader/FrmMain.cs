@@ -1,14 +1,9 @@
-﻿using NAudio.Wave;
-using StoryReader.Classes;
-using System.Collections.Specialized;
+﻿using StoryReader.Classes;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Speech.Synthesis;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace StoryReader
 {
@@ -61,7 +56,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                     Height = ds.Settings.ReadInt(nameof(Height), Height, it => it > 100 && it <= screen.Height);
                 }
                 var json = ds.Settings.ReadString(nameof(SavedSearch.Searches), "[]")!;
-                var theme = (AppTheme)ds.Settings.ReadInt(nameof(AppTheme), 0);
+                theme = (AppTheme)ds.Settings.ReadInt(nameof(AppTheme), 0);
                 if (theme == AppTheme.Light)
                     tsmiLightMode.PerformClick();
                 else
@@ -79,7 +74,6 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 cmbFind.DisplayMember = nameof(SavedSearch.Find);
                 cmbFind.SelectedIndex = -1;
                 SavedSearch.Enabled = true;
-                //speaker.Synth.SpeakCompleted += Synth_SpeakCompleted;
                 player.Init();
                 player.Stopped += Player_Stopped;
                 timKeyPresses.Start();
@@ -87,6 +81,8 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
+
+        private AppTheme theme;
 
         private void LoadAllVoices()
         {
@@ -896,21 +892,6 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
-        public enum AppTheme
-        {
-            Light,
-            Dark
-        }
-
-        public static class ThemeColors
-        {
-            public static Color LightBackColor => Color.White;
-            public static Color LightForeColor => Color.Black;
-
-            public static Color DarkBackColor => Color.FromArgb(30, 30, 30);
-            public static Color DarkForeColor => Color.White;
-        }
-
         private void TsmiViewMode_Click(object sender, EventArgs e)
         {
             if (sender is not ToolStripMenuItem tsmi)
@@ -934,8 +915,9 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
                 var foreColor = (theme == AppTheme.Dark) ? ThemeColors.DarkForeColor : ThemeColors.LightForeColor;
                 ctrl.BackColor = backColor;
                 ctrl.ForeColor = foreColor;
-                if (ReferenceEquals(ctrl, stripMenu))
-                    foreach (ToolStripMenuItem item in stripMenu.Items)
+                //if (ReferenceEquals(ctrl, stripMenu)) 
+                if (ctrl is MenuStrip ms)
+                    foreach (ToolStripMenuItem item in ms.Items)
                         ApplyThemeMenuItems(item, theme);
                 if (ctrl == dgvVoices)
                     ApplyThemeDGV(dgvVoices, theme);
@@ -1064,7 +1046,7 @@ fox.*dog	Finds ""fox jumps over the lazy dog"" .* for Anything");
         {
             try
             {
-                var frm = new FrmAzureVoices
+                var frm = new FrmAzureVoices(theme)
                 {
                     Voices = string.Join(Environment.NewLine, AzureSounds.AzureVoices!)
                 };

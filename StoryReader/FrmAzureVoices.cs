@@ -7,7 +7,7 @@ namespace StoryReader
 {
     public partial class FrmAzureVoices : Form
     {
-        public FrmAzureVoices()
+        public FrmAzureVoices(AppTheme theme)
         {
             InitializeComponent();
             TestsFolder = Path.Combine(Utils.GetAzureSoundsFolderName(), "_tests");
@@ -15,6 +15,10 @@ namespace StoryReader
             if (File.Exists(TestsTextFile))
                 txtTest.Text = File.ReadAllText(TestsTextFile);
             TestsSoundFile = Path.Combine(TestsFolder, "_test.mp3");
+
+            SuspendLayout();
+            FormThemes.ApplyTheme(this, theme, []);
+            ResumeLayout();
         }
 
         public string TestsFolder { get; private set; }
